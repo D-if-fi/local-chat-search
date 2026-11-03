@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -101,6 +102,9 @@ def main():
                                  % (server.poll(), tail or "(空)"))
 
         print("[1] 空库启动")
+        h = api(port, "/api/health")
+        check(h["ok"] is True and h["port"] == port and h["version"],
+              "/api/health 正常（v%s / %s）" % (h["version"], h["platform"]))
         st = api(port, "/api/stats")
         check(st["empty"] is True, "首次启动为空库（会弹导入向导）")
         check(urllib.request.urlopen("http://127.0.0.1:%d/" % port, timeout=10).status == 200,
@@ -132,6 +136,17 @@ def main():
         check(r["total"] >= 1, "单字「好」回退 LIKE 命中 %d 条" % r["total"])
         r = api(port, "/api/search?q=%s&limit=5" % urllib.parse.quote("补充说明"))
         check(r["total"] >= 1, "txt 续行已并入上一条（可搜到「补充说明」）")
+
+        print("[5] 清库必须显式确认")
+        req = urllib.request.Request("http://127.0.0.1:%d/api/import/reset" % port,
+                                     data=b"", method="POST")
+        try:
+            urllib.request.urlopen(req, timeout=10)
+            blocked = False
+        except urllib.error.HTTPError as e:
+            blocked = e.code == 400
+        check(blocked, "不带 confirm=1 的清库请求被拒绝（400）")
+        check(api(port, "/api/stats")["messages"] == EXPECT_TOTAL, "数据未被清空")
 
         print("\n全部通过")
         return 0

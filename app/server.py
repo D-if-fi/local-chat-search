@@ -22,7 +22,29 @@ ROOT = os.path.dirname(BASE)
 DATA = os.environ.get("CHAT_SEARCH_DATA") or os.path.join(ROOT, "data")
 DB = os.path.join(DATA, "chat_search.db")
 INDEX = os.path.join(BASE, "index.html")
-PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8777
+
+VERSION = "2.1.0"
+PORT_TRIES = 20  # 端口被占用时向后自动尝试的次数
+
+
+def _parse_port(argv):
+    """端口优先级：--port / -p / 位置参数 > 环境变量 CHAT_SEARCH_PORT > 8777。"""
+    raw = None
+    for i, a in enumerate(argv):
+        if a.startswith("--port="):
+            raw = a.split("=", 1)[1]
+        elif a in ("--port", "-p") and i + 1 < len(argv):
+            raw = argv[i + 1]
+        elif a.isdigit():
+            raw = a
+    raw = raw or os.environ.get("CHAT_SEARCH_PORT") or "8777"
+    try:
+        return max(1, min(65535, int(raw)))
+    except (TypeError, ValueError):
+        return 8777
+
+
+PORT = _parse_port(sys.argv[1:])
 
 sys.path.insert(0, BASE)
 import importer  # noqa: E402
@@ -295,7 +317,7 @@ def _flush(c, cur, batch):
 # ---------------------------------------------------------------- HTTP
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "ChatSearch/2.0"
+    server_version = "ChatSearch/%s" % VERSION
 
     def log_message(self, fmt, *args):
         pass
@@ -353,6 +375,9 @@ class Handler(BaseHTTPRequestHandler):
             if u.path == "/api/import/reset":
                 if IMPORT["state"] == "running":
                     return self._send(409, {"error": "导入进行中，无法清空"})
+                # 清空数据库不可恢复，必须显式带 confirm=1
+                if (qs.get("confirm") or [""])[0] != "1":
+                    return self._send(400, {"error": "清空数据库需要 confirm=1 明确确认"})
                 for suffix in ("", "-wal", "-shm"):
                     p = DB + suffix
                     if os.path.exists(p):
@@ -390,6 +415,17 @@ class Handler(BaseHTTPRequestHandler):
 
             if p == "/api/import/status":
                 return self._send(200, IMPORT)
+
+            if p == "/api/health":
+                return self._send(200, {
+                    "ok": True,
+                    "name": "local-chat-search",
+                    "version": VERSION,
+                    "port": self.server.server_address[1],
+                    "platform": sys.platform,
+                    "python": "%d.%d.%d" % sys.version_info[:3],
+                    "db_ready": bool(db_ready()),
+                })
 
             if not db_ready():
                 if p == "/api/stats":
@@ -517,6 +553,27 @@ class Handler(BaseHTTPRequestHandler):
                 pass
 
 
+def platform_label():
+    """给启动横幅用的人类可读平台名。"""
+    if sys.platform == "win32":
+        return "Windows"
+    if sys.platform == "darwin":
+        return "macOS"
+    return sys.platform
+
+
+def bind_server(port):
+    """绑定 127.0.0.1，端口被占用时自动向后顺延 PORT_TRIES 次。"""
+    last_err = None
+    for p in range(port, min(65535, port + PORT_TRIES) + 1):
+        try:
+            return ThreadingHTTPServer(("127.0.0.1", p), Handler), p
+        except OSError as e:
+            last_err = e
+    raise SystemExit("端口 %d~%d 都被占用，请用 --port 指定其他端口（%s）"
+                     % (port, port + PORT_TRIES, last_err))
+
+
 def main():
     # Windows 控制台与重定向输出默认不是 UTF-8，打印中文会 UnicodeEncodeError 直接把服务打断
     if sys.platform == "win32":
@@ -525,17 +582,23 @@ def main():
                 stream.reconfigure(encoding="utf-8", errors="replace")
             except Exception:
                 pass
+    print("local-chat-search v%s · %s · Python %d.%d.%d"
+          % (VERSION, platform_label(), *sys.version_info[:3]))
+    print("数据目录: %s" % DATA)
     if db_ready():
         print("数据库: %s" % DB)
     else:
         print("尚未导入聊天记录，打开网页后可直接拖入导出包")
-    srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print("聊天记录检索已启动: http://127.0.0.1:%d" % PORT)
+    srv, port = bind_server(PORT)
+    if port != PORT:
+        print("端口 %d 已被占用，已自动改用 %d" % (PORT, port))
+    url = "http://127.0.0.1:%d" % port
+    print("聊天记录检索已启动: %s" % url)
     print("按 Ctrl+C 停止")
     if not os.environ.get("CHAT_SEARCH_NO_BROWSER"):
         try:
             import webbrowser
-            threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:%d" % PORT)).start()
+            threading.Timer(1.0, lambda: webbrowser.open(url)).start()
         except Exception:
             pass
     try:

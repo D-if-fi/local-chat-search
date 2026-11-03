@@ -24,6 +24,23 @@ jobs:
       - name: 语法检查（无第三方依赖，只编译）
         run: python -m py_compile app/server.py app/importer.py tools/csv_to_jsonl.py
 
+      - name: 启动脚本语法检查（bash）
+        shell: bash
+        run: |
+          bash -n start.sh && bash -n start.command && echo "bash 启动脚本语法正常"
+
+      - name: 启动脚本语法检查（PowerShell）
+        shell: pwsh
+        run: |
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Resolve-Path ./start.ps1), [ref]$null, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host $_ }
+            exit 1
+          }
+          Write-Host "start.ps1 语法正常"
+
       - name: 端到端冒烟测试
         run: python tests/smoke_test.py
 

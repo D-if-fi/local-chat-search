@@ -2,49 +2,62 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>聊天记录检索</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="referrer" content="no-referrer">
+<title>聊天记录检索 · local-chat-search</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234c8dff'/><path d='M9 12h14M9 17.5h9' stroke='%23fff' stroke-width='2.8' stroke-linecap='round'/></svg>">
 <style>
 :root{
-  --bg:#0e1014; --bg2:#151821; --bg3:#1c202b; --line:#262b38;
+  --bg:#0e1014; --bg2:#151821; --bg3:#1c202b; --line:#262b38; --line2:#1b1f29;
   --fg:#d8dce6; --fg2:#8b93a7; --acc:#4c8dff; --acc2:#2bd6a4; --warn:#ffb454;
+  --shadow:0 18px 48px rgba(0,0,0,.55);
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{
-  background:var(--bg);color:var(--fg);
-  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased;
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
   display:flex;flex-direction:column;overflow:hidden;
 }
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-thumb{background:#2c3242;border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:#39415a}
 ::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit}
 
 header{
-  display:flex;align-items:center;gap:14px;padding:12px 20px;
-  background:var(--bg2);border-bottom:1px solid var(--line);flex:0 0 auto;
+  display:flex;align-items:center;gap:12px;padding:11px 20px;
+  background:var(--bg2);border-bottom:1px solid var(--line);flex:0 0 auto;flex-wrap:wrap;
 }
-h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.3px}
+h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.3px;white-space:nowrap}
 h1 span{color:var(--acc)}
-.meta{color:var(--fg2);font-size:12px}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--acc2);
+  border:1px solid #1f4a3d;background:rgba(43,214,164,.07);border-radius:20px;padding:1px 9px;
+  white-space:nowrap;
+}
+.badge i{width:6px;height:6px;border-radius:50%;background:var(--acc2);display:inline-block}
+.meta{color:var(--fg2);font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .meta b{color:var(--fg);font-weight:600}
 
 .search-wrap{padding:12px 20px 0;background:var(--bg2);flex:0 0 auto}
 .bar{display:flex;gap:8px}
 #q{
-  flex:1;height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--line);
-  background:var(--bg);color:var(--fg);font-size:15px;outline:none;
+  flex:1;min-width:0;height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg);color:var(--fg);font-size:15px;outline:none;transition:border-color .15s,box-shadow .15s;
 }
 #q:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(76,141,255,.14)}
+#q::placeholder{color:#576074}
 button{
   height:40px;padding:0 18px;border-radius:9px;border:1px solid var(--line);
-  background:var(--bg3);color:var(--fg);cursor:pointer;font-size:14px;
+  background:var(--bg3);color:var(--fg);cursor:pointer;font-size:14px;transition:background .15s,border-color .15s;
 }
 button:hover{background:#232838}
 button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
 button.primary:hover{background:#3d7cf0}
 button.ghost{background:transparent;height:30px;padding:0 10px;font-size:12px;color:var(--fg2)}
-button.ghost:hover{color:var(--fg)}
+button.ghost:hover{color:var(--fg);background:#232838}
 
 .filters{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 12px;align-items:center}
 .picker{position:relative}
@@ -73,23 +86,23 @@ select{
   background:var(--bg);color:var(--fg);font-size:13px;outline:none;
 }
 label.chk{display:flex;align-items:center;gap:5px;color:var(--fg2);font-size:12px;cursor:pointer}
+.kbdhint{margin-left:auto;color:var(--fg2);font-size:11.5px;display:flex;gap:10px;align-items:center}
+kbd{background:#232838;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11px;color:var(--fg);font-family:inherit}
 
 main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
-.list-pane{width:46%;min-width:380px;max-width:720px;display:flex;flex-direction:column;min-height:0}
+.list-pane{width:46%;min-width:320px;max-width:760px;display:flex;flex-direction:column;min-height:0}
 .status{
   padding:8px 20px;font-size:12px;color:var(--fg2);border-bottom:1px solid var(--line);
-  display:flex;justify-content:space-between;align-items:center;flex:0 0 auto;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex:0 0 auto;
 }
 .status b{color:var(--fg)}
 #list{flex:1;overflow:auto;overscroll-behavior:contain}
-.item{
-  padding:11px 20px;border-bottom:1px solid #1b1f29;cursor:pointer;
-}
+.item{padding:11px 20px;border-bottom:1px solid var(--line2);cursor:pointer;scroll-margin:8px}
 .item:hover{background:#141822}
-.item.active{background:#22384f;box-shadow:inset 4px 0 0 var(--acc),inset 0 0 0 1px #3a5f92}
+.item.active{background:#22384f;box-shadow:inset 3px 0 0 var(--acc),inset 0 0 0 1px #3a5f92}
 .item .top{display:flex;gap:8px;align-items:baseline;font-size:12px;margin-bottom:3px}
 .item .chat{color:var(--acc);font-weight:600;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.item .who{color:var(--fg)}
+.item .who{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item .ts{color:var(--fg2);margin-left:auto;flex:0 0 auto}
 .item .txt{color:#b9c0d0;font-size:13px;line-height:1.65;word-break:break-word;overflow-wrap:anywhere}
 .item .txt mark{background:rgba(255,196,0,.24);color:#ffdf8a;border-radius:3px;padding:0 1px}
@@ -97,8 +110,14 @@ main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
   display:inline-block;font-size:10px;padding:0 5px;border-radius:4px;
   border:1px solid var(--line);color:var(--fg2);vertical-align:middle;margin-left:5px;
 }
-.empty{padding:60px 20px;text-align:center;color:var(--fg2)}
+.empty{padding:60px 20px;text-align:center;color:var(--fg2);line-height:1.9}
 .empty b{display:block;color:var(--fg);font-size:15px;margin-bottom:6px}
+.empty .tips{margin-top:14px;font-size:12.5px}
+.empty .tips span{
+  display:inline-block;margin:4px 4px 0 0;padding:2px 9px;border-radius:20px;
+  border:1px solid var(--line);background:var(--bg3);color:var(--fg2);cursor:pointer;
+}
+.empty .tips span:hover{color:var(--fg);border-color:var(--acc)}
 
 .panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);border-left:1px solid var(--line)}
 .panel-head{
@@ -108,7 +127,8 @@ main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
 .panel-head .t{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .panel-head .s{color:var(--fg2);font-size:12px;flex:0 0 auto}
 #convo{flex:1;overflow:auto;padding:16px 18px 40px;scroll-behavior:smooth}
-.msg{padding:7px 10px;border-radius:8px;margin-bottom:3px}
+.msg{padding:7px 10px;border-radius:8px;margin-bottom:3px;cursor:default}
+.msg:hover{background:#12161f}
 .msg.focus{background:#17233a;box-shadow:inset 0 0 0 1px #2b4a7d}
 .msg .mh{font-size:11.5px;color:var(--fg2);margin-bottom:2px;display:flex;gap:8px;align-items:baseline}
 .msg .mh b{color:#9ec1ff;font-weight:600}
@@ -118,51 +138,96 @@ main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
 .msg.sys .mb{color:#6f7789;font-style:italic}
 .more{padding:10px;text-align:center}
 .hint{color:var(--fg2);font-size:12px;line-height:1.8}
-kbd{background:#232838;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11px;color:var(--fg)}
 
 /* ---------- 导入向导 ---------- */
 #onboard{
   position:fixed;inset:0;z-index:200;background:rgba(10,12,16,.94);
   display:none;align-items:center;justify-content:center;padding:24px;
-  backdrop-filter:blur(4px);
+  backdrop-filter:blur(4px);overflow:auto;
 }
 #onboard.show{display:flex}
 .card{
-  width:min(640px,100%);background:var(--bg2);border:1px solid var(--line);
-  border-radius:16px;padding:28px 30px;box-shadow:0 24px 70px rgba(0,0,0,.6);
+  width:min(660px,100%);background:var(--bg2);border:1px solid var(--line);
+  border-radius:16px;padding:28px 30px;box-shadow:var(--shadow);margin:auto;
 }
-.card h2{margin:0 0 6px;font-size:19px;font-weight:600}
-.card p.sub{margin:0 0 20px;color:var(--fg2);font-size:13px}
+.card h2{margin:0 0 6px;font-size:19px;font-weight:650}
+.card p.sub{margin:0 0 18px;color:var(--fg2);font-size:13px}
 #dropzone{
-  border:1.5px dashed #33405a;border-radius:12px;padding:34px 20px;text-align:center;
-  cursor:pointer;transition:.15s;background:rgba(76,141,255,.03);
+  border:1.5px dashed #33405a;border-radius:12px;padding:32px 20px;text-align:center;
+  cursor:pointer;transition:.15s;background:rgba(76,141,255,.03);outline:none;
 }
-#dropzone:hover,#dropzone.over{border-color:var(--acc);background:rgba(76,141,255,.09)}
+#dropzone:hover,#dropzone.over,#dropzone:focus{border-color:var(--acc);background:rgba(76,141,255,.09)}
 #dropzone .big{font-size:15px;margin-bottom:6px}
 #dropzone .sm{color:var(--fg2);font-size:12.5px}
-.fmt{margin:18px 0 0;padding:14px 16px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.fmt{margin:16px 0 0;padding:13px 16px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
 .fmt div{font-size:12.5px;color:var(--fg2);line-height:1.9}
 .fmt b{color:var(--fg)}
-#prog{display:none;margin-top:20px}
+#prog{display:none;margin-top:18px}
 #prog.show{display:block}
 .bar-bg{height:7px;background:#20262f;border-radius:5px;overflow:hidden}
 .bar-fg{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
 .ptxt{display:flex;justify-content:space-between;font-size:12px;color:var(--fg2);margin-top:9px}
 .err{color:#ff7b7b;font-size:12.5px;margin-top:12px;display:none}
 .err.show{display:block}
-.card .ops{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+.card .ops{display:flex;gap:10px;margin-top:18px;align-items:center}
+.card .ops .right{margin-left:auto;display:flex;gap:10px}
+.danger{color:#ff8b8b;border-color:#4a2020}
+.danger:hover{background:#3a1d1d;color:#ffb0b0}
+
+/* ---------- 拖拽提示 / toast ---------- */
+#dropveil{
+  position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+  background:rgba(10,12,16,.86);border:2px dashed var(--acc);border-radius:0;
+  pointer-events:none;
+}
+#dropveil.show{display:flex}
+#dropveil div{font-size:16px;color:var(--fg);text-align:center;line-height:2}
+#dropveil span{display:block;font-size:12.5px;color:var(--fg2)}
+#toast{
+  position:fixed;left:50%;bottom:34px;transform:translate(-50%,14px);z-index:400;
+  background:#242b3a;border:1px solid #37405a;color:var(--fg);font-size:13px;
+  padding:9px 18px;border-radius:22px;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- 窄屏：单栏 + 详情浮层 ---------- */
+@media (max-width: 900px){
+  html,body{overflow:auto}
+  header{padding:10px 14px;gap:8px}
+  h1{font-size:14px}
+  .badge{display:none}
+  .search-wrap{padding:10px 14px 0}
+  .kbdhint{display:none}
+  .picker>input{width:130px}
+  main{flex-direction:column}
+  .list-pane{width:100%;max-width:none;min-width:0}
+  #list{max-height:none}
+  .panel{display:none}
+  .panel.show{
+    display:flex;position:fixed;inset:0;z-index:150;border-left:none;
+    padding-top:env(safe-area-inset-top);
+  }
+  .panel .panel-head{position:sticky;top:0;z-index:2}
+  .card{padding:22px 18px}
+  #q{font-size:16px}
+}
 </style>
 </head>
 <body>
 <header>
   <h1>聊天记录<span>检索</span></h1>
+  <span class="badge" id="badge" title="服务只监听 127.0.0.1，数据只写本机"><i></i>本地运行 · 数据不出本机</span>
   <div class="meta" id="stat">加载中…</div>
-  <button class="ghost" id="btnImport" style="margin-left:auto">导入 / 追加记录</button>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button class="ghost" id="btnHelp" title="快捷键">快捷键</button>
+    <button class="ghost" id="btnImport" style="height:30px;padding:0 12px;font-size:12.5px;color:var(--fg)">导入 / 追加记录</button>
+  </div>
 </header>
 
 <div class="search-wrap">
   <div class="bar">
-    <input id="q" placeholder="输入关键词搜索，空格分隔多个词" autocomplete="off">
+    <input id="q" placeholder="输入关键词搜索，空格分隔多个词" autocomplete="off" spellcheck="false">
     <button class="primary" id="btn">搜索</button>
     <button id="reset" title="清空筛选">重置</button>
   </div>
@@ -179,39 +244,49 @@ kbd{background:#232838;border:1px solid var(--line);border-radius:4px;padding:1p
     <input type="date" id="end" title="截止日期">
     <select id="mtype"><option value="">全部类型</option></select>
     <label class="chk"><input type="checkbox" id="deleted"> 含已撤回</label>
+    <div class="kbdhint">
+      <span><kbd>/</kbd> 聚焦搜索</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd> 选结果</span>
+      <span><kbd>Esc</kbd> 关闭详情</span>
+    </div>
   </div>
 </div>
 
 <main>
   <div class="list-pane">
     <div class="status" id="status">输入关键词开始检索</div>
-    <div id="list"><div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div></div>
+    <div id="list">
+      <div class="empty">
+        <b>准备就绪</b>
+        支持消息全文、会话名、发送人、时间范围组合筛选
+        <div class="tips" id="tips"></div>
+      </div>
+    </div>
   </div>
   <div class="panel" id="panel">
     <div class="panel-head">
       <div class="t" id="pTitle">对话上下文</div>
       <div class="s" id="pSub"></div>
-      <button class="ghost" id="pClose" style="margin-left:auto">关闭</button>
+      <button class="ghost" id="pClose" aria-label="关闭详情面板" style="margin-left:auto">关闭</button>
     </div>
     <div id="convo">
       <div class="empty" style="padding:40px 18px">
         <b>点击左侧任一结果</b>
-        右侧显示该条消息前后各 12 条对话，可继续加载更多。<br>
-        <span class="hint">快捷键：<kbd>Enter</kbd> 搜索 · <kbd>Esc</kbd> 关闭详情</span>
+        右侧显示该条消息前后各 12 条对话，点击任意消息可复制原文。
       </div>
     </div>
   </div>
 </main>
 
 <!-- 导入向导 -->
-<div id="onboard">
+<div id="onboard" role="dialog" aria-modal="true" aria-labelledby="obTitle">
   <div class="card">
     <h2 id="obTitle">导入你的聊天记录</h2>
     <p class="sub" id="obSub">所有数据只保存在这台电脑上，不会上传到任何服务器。</p>
 
-    <div id="dropzone">
+    <div id="dropzone" tabindex="0" role="button">
       <div class="big">把聊天记录导出包拖到这里</div>
-      <div class="sm">或点击选择文件 · 支持 .zip / .txt / .json</div>
+      <div class="sm">或点击选择文件 · 支持 .zip / .txt / .json / .jsonl</div>
     </div>
 
     <div class="fmt">
@@ -229,10 +304,16 @@ kbd{background:#232838;border:1px solid var(--line);border-radius:4px;padding:1p
     <div class="err" id="err"></div>
 
     <div class="ops">
-      <button class="ghost" id="obClose" style="display:none">稍后再说</button>
+      <button class="ghost danger" id="obReset" style="display:none" title="删除本机数据库并重新导入">清空数据库</button>
+      <div class="right">
+        <button class="ghost" id="obClose" aria-label="关闭导入弹窗" style="display:none">稍后再说</button>
+      </div>
     </div>
   </div>
 </div>
+
+<div id="dropveil"><div>松手即可导入<span>同一份记录重复导入不会产生重复数据</span></div></div>
+<div id="toast"></div>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -245,7 +326,7 @@ const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 let state = {q:'', chat_id:'', chat_name:'', sender:'', start:'', end:'', mtype:'', deleted:'', offset:0, total:0, terms:[], items:[]};
-let focusId = null, hasData = false, polling = null;
+let focusId = null, hasData = false, polling = null, navIdx = -1, autoTimer = null;
 
 function hi(text, terms){
   let h = esc(text);
@@ -254,6 +335,30 @@ function hi(text, terms){
     const re = new RegExp('(' + terms.map(escRe).join('|') + ')', 'gi');
     return h.replace(re, '<mark>$1</mark>');
   }catch(e){ return h; }
+}
+
+function toast(msg, ms){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), ms || 1800);
+}
+
+function copyText(text){
+  const done = () => toast('已复制这条消息');
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+  }else{
+    fallbackCopy(text, done);
+  }
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); done(); }catch(e){ toast('复制失败，请手动选择'); }
+  ta.remove();
 }
 
 // ---------- 通用可搜索下拉 ----------
@@ -272,7 +377,7 @@ function picker(rootId, onPick, fetchList){
   async function load(){
     const kw = inp.value.trim();
     focusIdx = -1;
-    render(await fetchList(kw), kw);
+    try{ render(await fetchList(kw), kw); }catch(e){ render([], kw); }
   }
   inp.addEventListener('focus', () => { drop.classList.add('show'); load(); });
   inp.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 160); });
@@ -281,10 +386,10 @@ function picker(rootId, onPick, fetchList){
     if(e.key === 'ArrowDown'){ e.preventDefault(); focusIdx = Math.min(focusIdx+1, its.length-1); its.forEach((x,i)=>x.classList.toggle('on', i===focusIdx)); }
     else if(e.key === 'ArrowUp'){ e.preventDefault(); focusIdx = Math.max(focusIdx-1, 0); its.forEach((x,i)=>x.classList.toggle('on', i===focusIdx)); }
     else if(e.key === 'Enter' && focusIdx >= 0){ e.preventDefault(); its[focusIdx].click(); }
-    else if(e.key === 'Escape'){ drop.classList.remove('show'); }
+    else if(e.key === 'Escape'){ drop.classList.remove('show'); inp.blur(); }
   });
   document.addEventListener('click', e => { if(!root.contains(e.target)) drop.classList.remove('show'); });
-  return { input: inp, set: v => { inp.value = v; } };
+  return { input: inp, set: v => { inp.value = v; }, get: () => inp.value.trim() };
 }
 
 const chatPicker = picker('#pkChat', it => { state.chat_id = it.id; state.chat_name = it.label; chatPicker.set(it.label); doSearch(true); },
@@ -294,32 +399,51 @@ const senderPicker = picker('#pkSender', it => { state.sender = it.id; senderPic
   kw => api('/api/senders', {q:kw}).then(r => r.map(s => ({id:s.sender, label:s.sender, n:s.n}))));
 
 // ---------- 搜索 ----------
-async function doSearch(resetOffset){
+function readFilters(){
   state.q = $('#q').value.trim();
   state.start = $('#start').value;
   state.end = $('#end').value;
   state.mtype = $('#mtype').value;
   state.deleted = $('#deleted').checked ? '1' : '';
+}
+
+function hasAnyFilter(){
+  return !!(state.q || state.chat_id || state.sender || state.start || state.end || state.mtype);
+}
+
+async function doSearch(resetOffset){
+  readFilters();
   if(resetOffset) state.offset = 0;
-  if(!state.q && !state.chat_id && !state.sender && !state.start && !state.end && !state.mtype){
+  if(!hasAnyFilter()){
     $('#status').textContent = '输入关键词开始检索';
-    $('#list').innerHTML = '<div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div>';
+    $('#list').innerHTML = emptyHtml();
+    navIdx = -1;
     return;
   }
   $('#status').textContent = '检索中…';
   const t0 = performance.now();
-  const r = await api('/api/search', {
-    q: state.q, chat_id: state.chat_id, sender: state.sender,
-    start: state.start, end: state.end, mtype: state.mtype, deleted: state.deleted,
-    limit: 50, offset: state.offset
-  });
-  state.total = r.total; state.terms = r.terms || [];
+  let r;
+  try{
+    r = await api('/api/search', {
+      q: state.q, chat_id: state.chat_id, sender: state.sender,
+      start: state.start, end: state.end, mtype: state.mtype, deleted: state.deleted,
+      limit: 50, offset: state.offset
+    });
+  }catch(e){
+    $('#status').textContent = '检索失败，请确认服务仍在运行';
+    return;
+  }
+  state.total = r.total || 0; state.terms = r.terms || [];
   const ms = Math.round(performance.now() - t0);
-  $('#status').innerHTML = `命中 <b>${r.total.toLocaleString()}</b> 条 · 用时 <b>${ms}ms</b>` +
+  $('#status').innerHTML = `命中 <b>${state.total.toLocaleString()}</b> 条 · 用时 <b>${ms}ms</b>` +
     (r.mode === 'like' ? ' · 关键词较短，已用模糊扫描' : '');
 
-  if(resetOffset){ state.items = r.items; } else { state.items = state.items.concat(r.items); }
+  if(resetOffset){ state.items = r.items || []; navIdx = -1; } else { state.items = state.items.concat(r.items || []); }
   renderList(resetOffset);
+}
+
+function emptyHtml(){
+  return `<div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选<div class="tips" id="tips"></div></div>`;
 }
 
 function renderList(scrollTop){
@@ -328,8 +452,8 @@ function renderList(scrollTop){
     box.innerHTML = '<div class="empty"><b>没有匹配结果</b>换个关键词，或放宽时间范围 / 去掉筛选条件</div>';
     return;
   }
-  box.innerHTML = state.items.map(it => `
-    <div class="item" data-id="${it.id}">
+  box.innerHTML = state.items.map((it, i) => `
+    <div class="item" data-id="${it.id}" data-i="${i}">
       <div class="top">
         <span class="chat" title="${esc(it.chat_name)}">${esc(it.chat_name)}</span>
         <span class="who">${esc(it.sender || '系统')}</span>
@@ -342,19 +466,31 @@ function renderList(scrollTop){
       : `<div class="more" style="color:var(--fg2);font-size:12px">已显示全部 ${state.items.length} 条</div>`);
 
   box.querySelectorAll('.item').forEach(el => {
-    el.onclick = () => { box.querySelectorAll('.item').forEach(x=>x.classList.remove('active')); el.classList.add('active'); openContext(+el.dataset.id); };
+    el.onclick = () => selectItem(+el.dataset.i, false);
   });
   const mb = $('#more');
   if(mb) mb.onclick = () => { state.offset = state.items.length; doSearch(false); };
   if(scrollTop) box.scrollTop = 0;
 }
 
+function selectItem(i, scroll){
+  const its = document.querySelectorAll('#list .item');
+  if(!its.length) return;
+  navIdx = Math.max(0, Math.min(i, its.length - 1));
+  its.forEach((x, k) => x.classList.toggle('active', k === navIdx));
+  const el = its[navIdx];
+  if(scroll) el.scrollIntoView({block:'nearest'});
+  openContext(+el.dataset.id);
+}
+
 // ---------- 上下文 ----------
 async function openContext(id){
   focusId = id;
   $('#convo').innerHTML = '<div class="empty">加载中…</div>';
-  const r = await api('/api/context', {id, before:12, after:12});
-  $('#pTitle').textContent = r.chat_name;
+  let r;
+  try{ r = await api('/api/context', {id, before:12, after:12}); }
+  catch(e){ $('#convo').innerHTML = '<div class="empty">加载失败</div>'; return; }
+  $('#pTitle').textContent = r.chat_name || '对话上下文';
   $('#pSub').textContent = `${r.items.length} 条上下文`;
   $('#panel').classList.add('show');
   $('#convo').innerHTML = r.items.map(m => msgHtml(m, m.id === r.focus)).join('') +
@@ -362,6 +498,12 @@ async function openContext(id){
   const fe = $('#convo').querySelector('.msg.focus');
   if(fe) fe.scrollIntoView({block:'center'});
   $('#ctxMore').onclick = () => loadChat(r.chat_id, 0, true);
+  $('#convo').querySelectorAll('.msg').forEach(el => {
+    el.onclick = () => {
+      const b = el.querySelector('.mb');
+      copyText(b ? b.textContent : '');
+    };
+  });
 }
 
 function msgHtml(m, focus){
@@ -397,6 +539,7 @@ async function loadChat(cid, offset, replace){
 function openOnboard(first){
   $('#onboard').classList.add('show');
   $('#obClose').style.display = first ? 'none' : 'block';
+  $('#obReset').style.display = first ? 'none' : 'block';
   if(first){ $('#obTitle').textContent = '导入你的聊天记录'; $('#obSub').textContent = '所有数据只保存在这台电脑上，不会上传到任何服务器。'; }
   else { $('#obTitle').textContent = '追加导入'; $('#obSub').textContent = '已有的记录不会重复写入，只会补入新内容。'; }
   $('#prog').classList.remove('show');
@@ -486,7 +629,7 @@ async function refreshAll(){
     return;
   }
   $('#stat').innerHTML = `<b>${s.messages.toLocaleString()}</b> 条消息 · <b>${s.chats.toLocaleString()}</b> 个会话 · ` +
-    `<b>${s.senders.toLocaleString()}</b> 位发送者 · ${s.first} ~ ${s.last}` +
+    `<b>${s.senders.toLocaleString()}</b> 位发送者 · ${esc(s.first)} ~ ${esc(s.last)}` +
     (s.source ? ` · 来源 ${esc(s.source)}` : '');
   const types = await api('/api/types');
   $('#mtype').innerHTML = '<option value="">全部类型</option>' +
@@ -495,26 +638,55 @@ async function refreshAll(){
 
 // ---------- 事件绑定 ----------
 $('#btn').onclick = () => doSearch(true);
-$('#q').addEventListener('keydown', e => { if(e.key === 'Enter') doSearch(true); });
+$('#q').addEventListener('input', () => {
+  clearTimeout(autoTimer);
+  autoTimer = setTimeout(() => {
+    readFilters();
+    if(state.q.length >= 2 || hasAnyFilter()) doSearch(true);
+  }, 420);
+});
+$('#q').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ clearTimeout(autoTimer); doSearch(true); }
+  else if(e.key === 'ArrowDown' && state.items.length){ e.preventDefault(); selectItem(0, true); }
+});
 $('#start').onchange = $('#end').onchange = $('#mtype').onchange = $('#deleted').onchange = () => doSearch(true);
 $('#reset').onclick = () => {
   $('#q').value = ''; $('#start').value = ''; $('#end').value = ''; $('#mtype').value = '';
   $('#deleted').checked = false;
   chatPicker.set(''); senderPicker.set('');
-  Object.assign(state, {q:'', chat_id:'', chat_name:'', sender:'', start:'', end:'', mtype:'', deleted:'', offset:0, items:[]});
+  Object.assign(state, {q:'', chat_id:'', chat_name:'', sender:'', start:'', end:'', mtype:'', deleted:'', offset:0, total:0, items:[], terms:[]});
+  navIdx = -1;
   $('#status').textContent = '输入关键词开始检索';
-  $('#list').innerHTML = '<div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div>';
+  $('#list').innerHTML = emptyHtml();
   $('#q').focus();
 };
-$('#pClose').onclick = () => { $('#panel').classList.remove('show'); $('#convo').innerHTML = '<div class="empty" style="padding:40px 18px"><b>点击左侧任一结果</b>右侧显示该条消息前后各 12 条对话。</div>'; };
-document.addEventListener('keydown', e => { if(e.key === 'Escape') $('#pClose').click(); });
-
+$('#pClose').onclick = () => {
+  $('#panel').classList.remove('show');
+  $('#convo').innerHTML = '<div class="empty" style="padding:40px 18px"><b>点击左侧任一结果</b>右侧显示该条消息前后各 12 条对话。</div>';
+};
 $('#btnImport').onclick = () => openOnboard(!hasData);
 $('#obClose').onclick = () => $('#onboard').classList.remove('show');
+$('#btnHelp').onclick = () => toast('快捷键：/ 或 ⌘K 聚焦搜索 · ↑↓ 切换结果 · Enter 搜索 · Esc 关闭详情', 3600);
+
+$('#obReset').onclick = async () => {
+  const ok = window.confirm('这会删除本机的 data/chat_search.db，里面所有已导入的聊天记录都会被清空，且无法恢复。\n\n确认清空并重新导入？');
+  if(!ok) return;
+  try{
+    const r = await api('/api/import/reset', {confirm: '1'});
+    if(r.ok === false || r.error) throw new Error(r.error || '未知错误');
+    toast('数据库已清空');
+    await refreshAll();
+    openOnboard(true);
+  }catch(e){
+    $('#err').textContent = '清空失败：' + (e.message || e);
+    $('#err').classList.add('show');
+  }
+};
 
 const dz = $('#dropzone'), fi = document.createElement('input');
 fi.type = 'file'; fi.accept = '.zip,.txt,.log,.md,.json,.jsonl,.ndjson';
 dz.onclick = () => fi.click();
+dz.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); fi.click(); } });
 fi.onchange = () => { if(fi.files[0]) startImport(fi.files[0], !hasData); fi.value = ''; };
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('over'));
@@ -522,10 +694,24 @@ dz.addEventListener('drop', e => {
   e.preventDefault(); dz.classList.remove('over');
   if(e.dataTransfer.files[0]) startImport(e.dataTransfer.files[0], !hasData);
 });
-// 整页拖入也可导入
-window.addEventListener('dragover', e => { if(hasData) { e.preventDefault(); } });
+
+// 整页拖入：显示提示遮罩，松手即导入
+let dragDepth = 0;
+window.addEventListener('dragenter', e => {
+  if(!e.dataTransfer || ![...(e.dataTransfer.types || [])].includes('Files')) return;
+  dragDepth++;
+  if(hasData) $('#dropveil').classList.add('show');
+});
+window.addEventListener('dragleave', () => {
+  dragDepth = Math.max(0, dragDepth - 1);
+  if(!dragDepth) $('#dropveil').classList.remove('show');
+});
+window.addEventListener('dragover', e => { if(e.dataTransfer && [...(e.dataTransfer.types||[])].includes('Files')) e.preventDefault(); });
 window.addEventListener('drop', e => {
+  dragDepth = 0;
+  $('#dropveil').classList.remove('show');
   if(!hasData) return;
+  if(e.target.closest('#dropzone')) return;
   e.preventDefault();
   if(e.dataTransfer.files[0]){
     openOnboard(false);
@@ -533,15 +719,53 @@ window.addEventListener('drop', e => {
   }
 });
 
+// 全局快捷键
+document.addEventListener('keydown', e => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  const typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+
+  if(e.key === 'Escape'){
+    if($('#onboard').classList.contains('show')){
+      if($('#obClose').style.display !== 'none') $('#onboard').classList.remove('show');
+      return;
+    }
+    $('#pClose').click();
+    return;
+  }
+  if((e.key === '/' && !typing) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')){
+    e.preventDefault();
+    $('#q').focus(); $('#q').select();
+    return;
+  }
+  if(!typing && (e.key === 'ArrowDown' || e.key === 'ArrowUp')){
+    if(!state.items.length) return;
+    e.preventDefault();
+    selectItem(navIdx + (e.key === 'ArrowDown' ? 1 : -1) < 0 ? 0 : navIdx + (e.key === 'ArrowDown' ? 1 : -1), true);
+  }
+  if(!typing && e.key === 'Enter' && navIdx >= 0){ e.preventDefault(); selectItem(navIdx, false); }
+});
+
 (async () => {
+  // 首页示例关键词（数据就绪后填）
+  const tipsBox = $('#tips');
+  if(tipsBox){
+    ['割接', '上线', '会议', 'TODO'].forEach(k => {
+      const s = document.createElement('span');
+      s.textContent = k;
+      s.onclick = () => { $('#q').value = k; doSearch(true); };
+      tipsBox.appendChild(s);
+    });
+  }
   await refreshAll();
   if(!hasData){
     $('#stat').textContent = '暂无数据';
     openOnboard(true);
   }
   // 服务端可能正在导入（刷新页面时）
-  const s = await api('/api/import/status');
-  if(s.state === 'running'){ $('#onboard').classList.add('show'); $('#prog').classList.add('show'); pollStatus(); }
+  try{
+    const s = await api('/api/import/status');
+    if(s.state === 'running'){ $('#onboard').classList.add('show'); $('#prog').classList.add('show'); pollStatus(); }
+  }catch(e){}
 })();
 </script>
 </body>

@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d8a81ac8d75e11f18c3f52540064ee0f
-    ReservedCode1: 18B1R7xFoOfnGxxPC0kKRF9zuxWz5EE6x6qztbLo/sqSS3dpjyFNRhmH0htvo5YKfsutOeySjm/m6RjqY1lc5DzuZuu/0PBi7Yb2xb3vvYF0fedEv2ISgiTbaIKfiH9HIMTumULa4G1CxAT0oAAkQqwKdAD1Un9GQc3wvuDMLiTn7G/no4/uycjmP+A=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d8a81ac8d75e11f18c3f52540064ee0f
-    ReservedCode2: 18B1R7xFoOfnGxxPC0kKRF9zuxWz5EE6x6qztbLo/sqSS3dpjyFNRhmH0htvo5YKfsutOeySjm/m6RjqY1lc5DzuZuu/0PBi7Yb2xb3vvYF0fedEv2ISgiTbaIKfiH9HIMTumULa4G1CxAT0oAAkQqwKdAD1Un9GQc3wvuDMLiTn7G/no4/uycjmP+A=
----
-
 # 贡献指南
 
 感谢愿意改进这个项目。为了不破坏「零依赖、数据不出本机」这两条底线，提交前请确认下面几点。
@@ -25,13 +14,14 @@ AIGC:
 ```bash
 python3 tests/smoke_test.py       # 必须退出码 0
 python3 -m py_compile app/server.py app/importer.py tools/csv_to_jsonl.py
+bash -n start.sh start.command    # 启动脚本语法（macOS / Linux）
 ```
 
 另外确认：
 
 - `git status` 里没有 `data/`、`*.db`、你自己的导出包（这是最容易犯的错，等于泄露聊天记录）
 - 新增/改动的逻辑有对应的断言写进 `tests/smoke_test.py`
-- 中文注释与用户可见文案保持中文（英文文档同步更新到 `README.en.md`）
+- 中文注释与用户可见文案保持中文；`README.md` 为英文主文档，中文改动同步到 `README.zh-CN.md`
 
 ## 加一个导出格式适配器
 
@@ -67,4 +57,3 @@ docs: 补充 Windows 解压乱码说明
 - 报错信息或截图
 
 **不要**在 Issue 里粘贴真实聊天记录、导出包或数据库文件。需要样例数据时，请自己编一份结构相同的假数据。
-*（内容由AI生成，仅供参考）*

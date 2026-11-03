@@ -1,129 +1,137 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d76e568fd75e11f1a286525400638852
-    ReservedCode1: WRC2kqf//fEmA25dmiysefu1Rht85KDiSJZYVXjunqglU6yFpc8kSbbESH75uiy8KluWvzyioyxnEvfoDETNL0J15S8e0GgzrFHhgZyQMVocFA+1FH2KC2fFhwtuNtcle3+8NzovdpRgdmnqm3gjOtXMxZ30O5Bbd4Zvjf3xN0stVj/F6u6Z9vO5t1I=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d76e568fd75e11f1a286525400638852
-    ReservedCode2: WRC2kqf//fEmA25dmiysefu1Rht85KDiSJZYVXjunqglU6yFpc8kSbbESH75uiy8KluWvzyioyxnEvfoDETNL0J15S8e0GgzrFHhgZyQMVocFA+1FH2KC2fFhwtuNtcle3+8NzovdpRgdmnqm3gjOtXMxZ30O5Bbd4Zvjf3xN0stVj/F6u6Z9vO5t1I=
----
-
 # local-chat-search
 
 [![CI](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml/badge.svg)](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)](#quick-start)
 
-把自己导出的聊天记录变成**离线、可全文检索、数据不出本机**的本地资料库。
+**Turn your exported chat history into a private, offline, full-text-searchable local database.**
 
-零第三方依赖（只用 Python 标准库），一条命令或双击脚本就能跑；所有数据只写本机的 `data/chat_search.db`，服务只监听 `127.0.0.1`，不联网、不上传、不需要账号。
+Zero third-party dependencies — Python standard library only. One command, or one double-click. Everything stays in `data/chat_search.db` on your machine, the server binds `127.0.0.1` only, and nothing is uploaded anywhere.
 
-![界面截图](docs/screenshot.png)
+English | [简体中文](README.zh-CN.md)
 
-## 为什么做这个
+![Screenshot](docs/screenshot.png)
 
-聊天记录导出包通常是几百个 JSON 文件堆在一个 zip 里，想找「上次那个割接窗口怎么定的」只能靠翻。把它塞进任何一个在线工具都意味着把自己几年的对话上传给第三方。
+## Why
 
-这个项目只做一件事：**在本机把导出包变成一个能搜的库**，然后给一个干净的搜索页。
+A chat export is usually hundreds of JSON files inside a zip. Finding "what did we decide about that cutover window?" means scrolling for ten minutes. Uploading it to an online tool means handing a few years of conversations to a third party.
 
-- 83 万条消息实测：导入约 1~1.5 分钟，检索毫秒级
-- 单文件、无依赖、无服务端、无账号、无遥测
-- 支持多格式，任何来源的聊天记录只要有时间/发送人/内容就能进来
+This project does exactly one thing: **make the export searchable on your own machine**, and give it a clean search page.
 
-## 快速开始
+- 830k messages, real-world test: import in ~1–1.5 min, search in milliseconds
+- Single process, no dependencies, no server, no account, no telemetry
+- Format-agnostic: any export with a time / sender / content field will ingest
 
-需要 Python 3.8+（macOS / Windows / Linux 均可），不需要 `pip install` 任何东西。
+## Quick start
+
+Requires **Python 3.8+** (macOS, Windows, Linux). No `pip install`, no virtualenv.
+
+### Option A — one-click scripts
+
+| Platform | Double-click | Or from terminal |
+| --- | --- | --- |
+| macOS | `start.command` | `./start.sh` |
+| Windows | `start.bat` | `start.bat 8888` |
+| Windows (PowerShell) | right-click → Run with PowerShell | `powershell -ExecutionPolicy Bypass -File .\start.ps1` |
+| Linux | — | `./start.sh` |
+
+All scripts auto-detect an installed Python 3.8+, start the server, and open `http://127.0.0.1:8777` in your browser.
+
+### Option B — plain command
 
 ```bash
-git clone https://github.com/<your-name>/local-chat-search.git
+git clone https://github.com/D-if-fi/local-chat-search.git
 cd local-chat-search
-python3 app/server.py          # 默认 http://127.0.0.1:8777
+python3 app/server.py            # http://127.0.0.1:8777
 ```
 
-或者直接双击：
+### Common options
 
-| 平台 | 双击 |
+| What | How |
 | --- | --- |
-| macOS | `启动检索.command` |
-| Windows | `启动检索.bat` |
+| Custom port | `./start.sh 8888` · `start.bat 8888` · `python3 app/server.py --port 8888` |
+| Port taken | The server automatically retries 8777→8786 and prints the chosen port |
+| Custom data location | `CHAT_SEARCH_DATA=~/my-chat-db python3 app/server.py` (Windows: set the same env var) |
+| Don't open a browser | `CHAT_SEARCH_NO_BROWSER=1 python3 app/server.py` |
+| Health check | `curl http://127.0.0.1:8777/api/health` |
 
-浏览器打开后首次会弹导入向导，把导出包拖进去即可。macOS 首次双击如提示「无法打开」，右键 → 打开，或执行一次 `chmod +x 启动检索.command`。
+On first launch the page shows an import wizard — drag your export zip onto the window and it ingests in the background. You can drop files onto the page at any time to add more.
 
-指定端口 / 指定数据库位置：
+> macOS: if double-clicking `start.command` says it "cannot be opened", right-click → Open, or run `chmod +x start.command start.sh` once.
 
-```bash
-python3 app/server.py 8888
-CHAT_SEARCH_DATA=~/my-chat-db python3 app/server.py
-```
+## Supported input
 
-## 支持的输入
-
-| 输入 | 说明 |
+| Input | Notes |
 | --- | --- |
-| 飞书聊天记录导出包 | zip 内含 `chats/*.json` + `chat_list.json`，自动识别会话名、发送人、消息类型与撤回状态 |
-| 通用 JSON / JSONL | 自动识别常见字段名，见下表；单文件或打包成 zip 均可 |
-| 纯文本 | 行首带时间戳的 txt，如 `[2024-03-02 09:00:12] 张三: 内容`；缩进续行自动并入上一条 |
-| CSV | 先用 `tools/csv_to_jsonl.py` 转成 JSONL，再导入 |
+| Feishu / Lark export zip | zip containing `chats/*.json` + `chat_list.json`; chat name, sender, message type and recall state are detected |
+| Generic JSON / JSONL | common field names auto-detected (see below); single file or zipped |
+| Plain text | txt with a leading timestamp, e.g. `[2024-03-02 09:00:12] Alice: hello`; indented continuation lines are merged into the previous message |
+| CSV | convert first with `tools/csv_to_jsonl.py`, then import the JSONL |
 
-字段名不用改，会自动匹配（大小写、下划线、空格不敏感）：
+You don't need to rename fields — matching is case-, underscore- and space-insensitive:
 
-| 用途 | 可识别的字段名 |
+| Meaning | Recognised field names |
 | --- | --- |
-| 时间 | `time` `create_time` `timestamp` `ts` `date` `datetime`（秒 / 毫秒时间戳或日期字符串都行） |
-| 发送人 | `sender` `from` `name` `username` `author` |
-| 内容 | `content` `text` `message` `msg` `body` |
-| 会话 | `chat_name` `chat` `group` `title` `conversation` `room` |
+| Time | `time` `create_time` `timestamp` `ts` `date` `datetime` (epoch seconds / ms or a date string) |
+| Sender | `sender` `from` `name` `username` `author` |
+| Content | `content` `text` `message` `msg` `body` |
+| Conversation | `chat_name` `chat` `group` `title` `conversation` `room` |
 
-重复导入同一份包**不会**产生重复数据（按消息唯一 mid 去重），所以每次导出新记录后直接再拖进去就能增量合并。
+Re-importing the same package is safe: messages are deduplicated by a stable message id, so you can just drop in each new export to merge incrementally.
 
-`examples/` 里三种格式各有一份样例，可以直接拿来跑通流程。
+`examples/` ships one sample per format so you can try the flow immediately.
 
-## 搜索能力
+## Search
 
-- 关键词全文检索，空格分隔多个词 = 同时包含
-- 双引号包住按整体短语匹配，如 `"带宽 割接"`
-- 按会话、发送人、日期范围、消息类型筛选，可只查已撤回消息
-- 点结果查看该条消息前后各 12 条原始上下文
+- Full-text keyword search; space-separated terms mean AND
+- Wrap terms in double quotes for exact phrase match, e.g. `"cutover window"`
+- Filter by conversation, sender, date range and message type; optionally only recalled messages
+- Click a hit to see 12 messages of surrounding context
 
-## 隐私
+Keyboard: `/` or `⌘K` focuses the search box, `↑`/`↓` moves through hits, `Enter` opens, `Esc` closes panels. Clicking a message copies it.
 
-- 数据只写在 `data/chat_search.db`，删掉即回到初始状态
-- 服务只绑 `127.0.0.1`，同局域网其它设备也访问不到
-- 仓库 `.gitignore` 已排除 `data/`、`*.db`，CI 会检查误提交
-- 图片、语音、视频、表情在源数据里没有文字，只能检索到占位标记，不做 OCR
+## Privacy
 
-## 目录结构
+- All data lives in `data/chat_search.db`; delete the folder and you are back to a clean slate
+- The server binds `127.0.0.1` only — other devices on your LAN cannot reach it
+- `.gitignore` excludes `data/` and `*.db`, and CI fails if such a file is ever committed
+- Images, voice, video and stickers carry no text in the source data, so only their placeholder markers are indexed — no OCR
+
+## Project layout
 
 ```
 local-chat-search/
 ├── app/
-│   ├── server.py        本地 HTTP 服务 + SQLite 检索（标准库）
-│   ├── importer.py      导出包解析与多格式适配
-│   └── index.html       单页检索界面
-├── tools/csv_to_jsonl.py  CSV → JSONL 转换
-├── examples/            三种格式的样例数据
-├── tests/smoke_test.py  端到端冒烟测试
-├── docs/ARCHITECTURE.md 实现说明：表结构、索引策略、检索路由
-├── 启动检索.command      macOS 启动脚本
-└── 启动检索.bat          Windows 启动脚本
+│   ├── server.py         local HTTP server + SQLite search (stdlib only)
+│   ├── importer.py       export parsing and format adapters
+│   └── index.html        single-page UI
+├── tools/csv_to_jsonl.py CSV → JSONL converter
+├── examples/             sample data in three formats
+├── tests/smoke_test.py   end-to-end smoke test
+├── docs/ARCHITECTURE.md  schema, index strategy, query routing
+├── start.command         macOS double-click launcher
+├── start.sh              macOS / Linux launcher
+├── start.bat             Windows launcher (cmd)
+└── start.ps1             Windows launcher (PowerShell)
 ```
 
-## 开发
+## Development
 
 ```bash
-python3 tests/smoke_test.py     # 起服务→导入 examples→检索→清理，退出码 0 即通过
+python3 tests/smoke_test.py   # start → import examples → search → clean up; exit 0 = pass
 ```
 
-想接入新的导出格式，只需在 `app/importer.py` 里加一个解析器类（实现 `label` / `sniff` / `parse`），然后挂到文件末尾的 `PARSERS` 列表，检索与界面无需改动。细节见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+CI runs the same smoke test on macOS, Windows and Ubuntu against Python 3.8 and 3.11, plus a syntax check of every launcher script.
 
-## 已知限制
+To support a new export format, add one parser class to `app/importer.py` implementing `label` / `sniff` / `parse` and register it in the `PARSERS` list at the bottom — no changes needed in search or UI. See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-- 一个消息分词粒度是字符 bigram：≥2 字的词走索引（毫秒级），单字查询回退 `LIKE` 全表扫描（80 万条约 1 秒）
-- 不支持图片/语音内容检索（源数据无文字）
-- Windows 上中文文件名解压需系统支持 UTF-8（Win10 及以上默认可以）
+## Known limitations
+
+- Tokenisation is character bigrams: terms of 2+ characters use the index (ms), single-character queries fall back to a `LIKE` scan (~1 s at 800k messages)
+- No image / voice content search (the source data has no text for them)
+- On Windows, non-ASCII filenames need UTF-8 support in the zip tooling (default on Windows 10+)
 
 ## License
 
 [MIT](LICENSE)
-*（内容由AI生成，仅供参考）*

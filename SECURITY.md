@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d97a485bd75e11f1a286525400638852
-    ReservedCode1: XiiA47hPeNI+c0FQqNvuwNWDm6Y0VlBpWqkv31Rqk8iTzXkJW+wpraILbiiHHlh+g403HHfY7RkeRb87XOoXPhMOUwde/krvQjHIhMdEFLRGpKiMLbzkCNfDZySu+clGYvNs/GckMtgbVlVunBwWdELHdW9D04ZxOMtIN3shVX+8cPUjsY3lLSYwdZ8=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d97a485bd75e11f1a286525400638852
-    ReservedCode2: XiiA47hPeNI+c0FQqNvuwNWDm6Y0VlBpWqkv31Rqk8iTzXkJW+wpraILbiiHHlh+g403HHfY7RkeRb87XOoXPhMOUwde/krvQjHIhMdEFLRGpKiMLbzkCNfDZySu+clGYvNs/GckMtgbVlVunBwWdELHdW9D04ZxOMtIN3shVX+8cPUjsY3lLSYwdZ8=
----
-
 # 安全与隐私
 
 这个项目的定位是「数据不出本机」，所以安全问题的门槛比较低，但下面两点仍然重要。
@@ -40,4 +29,3 @@ AIGC:
 - 不要把 `data/` 或导出包提交到仓库（`.gitignore` 已排除，CI 会检查）
 - 不要在 Issue / PR 中粘贴真实聊天记录、手机号、身份证等个人信息；需要样例数据请自行编造
 - 不要为本项目添加任何形式的埋点、远程日志或「使用统计」
-*（内容由AI生成，仅供参考）*
