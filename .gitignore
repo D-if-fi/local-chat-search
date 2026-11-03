@@ -24,3 +24,7 @@ data/
 *.zip
 !docs/*.zip
 *.log
+
+# 打包产物
+build/
+*.spec

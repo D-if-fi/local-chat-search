@@ -23,7 +23,32 @@
 - 单进程、无依赖、无服务端、无账号、无遥测
 - 多格式兼容：任何来源的聊天记录，只要有时间/发送人/内容字段就能进来
 
-## 快速开始
+## 下载直接用（不装 Python、不开终端）
+
+非技术用户看这里：到 [**Releases**](https://github.com/D-if-fi/local-chat-search/releases/latest) 下载打包好的可执行文件，双击即用，不需要装任何环境。
+
+| 平台 | 下载文件 | 怎么用 |
+| --- | --- | --- |
+| macOS | `local-chat-search-macos.zip` | 解压 → 双击 `local-chat-search.app` |
+| Windows | `local-chat-search-windows.exe` | 双击这个 `.exe` |
+
+程序会自己起本地服务并打开搜索页面，没有黑窗口、不用敲命令。
+
+程序**未做代码签名**，所以第一次打开需要多一步：
+
+- **macOS** 提示「Apple 无法验证」：右键点 App → **打开** → 再点 **打开**（或到 系统设置 → 隐私与安全性 → **仍要打开**）
+- **Windows** 提示「Windows 已保护你的电脑」：点 **更多信息** → **仍要运行**
+
+数据存放位置：
+
+| | 默认位置 | 便携模式（数据跟着程序走） |
+| --- | --- | --- |
+| macOS | `~/Library/Application Support/local-chat-search/data` | 在 `.app` 同级建一个 `data/` 文件夹 |
+| Windows | `%LOCALAPPDATA%\local-chat-search\data` | 在 `.exe` 同级建一个 `data/` 文件夹 |
+
+关闭程序即停止服务（macOS：Control + 点 Dock 图标 → 退出；Windows：关掉弹出的控制台窗口）。
+
+## 从源码运行
 
 需要 **Python 3.8+**（macOS / Windows / Linux 均可），不需要 `pip install` 任何东西。
 
@@ -59,6 +84,18 @@ python3 app/server.py            # http://127.0.0.1:8777
 首次打开页面会弹导入向导，把导出包拖进去即可，导入在后台进行。之后任何时候都能把文件拖到页面上追加。
 
 > macOS 首次双击 `start.command` 若提示「无法打开」，右键 → 打开，或执行一次 `chmod +x start.command start.sh`。
+
+## 自己构建可执行文件
+
+Release 里的成品由 GitHub Actions 在打 `v*` tag 时自动构建（`.github/workflows/release.yml`）。本地构建：
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install pyinstaller
+python tools/build_app.py
+```
+
+产物在 `build/dist/`：macOS 是 `local-chat-search.app`，Windows 是 `local-chat-search.exe`。PyInstaller 只是打包工具，程序本身运行时依然只用标准库。
 
 ## 支持的输入
 

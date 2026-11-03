@@ -1,5 +1,13 @@
 # 更新日志
 
+## v2.2.0 — 免安装可执行文件（双击即用）
+
+- 新增 macOS `.app` / Windows `.exe` 打包：普通用户不需要安装 Python、不需要开终端，双击就能用
+- `app/server.py` 支持 PyInstaller 运行时（`sys.frozen`）：静态资源从解包目录读取，数据库写到系统用户数据目录（macOS `~/Library/Application Support/local-chat-search/data`、Windows `%LOCALAPPDATA%\local-chat-search\data`）
+- 便携模式：可执行文件同级存在 `data/` 时优先使用它（U 盘、免安装场景）
+- 打包版启动失败时弹系统对话框告知原因（macOS 弹窗 / Windows 消息框），避免"闪一下就没了"
+- 新增 `tools/build_app.py`（一条命令出包）与 `.github/workflows/release.yml`（打 `v*` tag 自动构建 macOS / Windows 并发布到 Release）
+- 文档：中英文 README 增加「下载直接用」章节，含首次打开的 Gatekeeper / SmartScreen 放行步骤与数据目录说明
 ## v2.1.0 — 跨平台一键启动与英文文档
 
 - 启动脚本统一为 `start.sh`（macOS/Linux）、`start.command`（macOS 双击）、`start.bat`（Windows cmd）、`start.ps1`（Windows PowerShell），自动探测 `py -3` / `python3` / `python`

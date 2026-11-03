@@ -17,13 +17,53 @@ import threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-BASE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.dirname(BASE)
-DATA = os.environ.get("CHAT_SEARCH_DATA") or os.path.join(ROOT, "data")
+# ---------------------------------------------------------------- 路径定位
+# 源码运行时：app/server.py 所在目录为 BASE，仓库根为 ROOT。
+# PyInstaller 打包后（frozen）：静态资源在解包目录，数据不能写进临时目录，
+# 因此数据落到用户数据目录（可用 CHAT_SEARCH_DATA 覆盖，或用便携模式）。
+FROZEN = bool(getattr(sys, "frozen", False))
+
+if FROZEN:
+    _RES = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(sys.executable)))
+    if os.path.isfile(os.path.join(_RES, "index.html")):
+        BASE = _RES
+    else:
+        BASE = os.path.join(_RES, "app")
+    ROOT = os.path.dirname(os.path.abspath(sys.executable))
+else:
+    BASE = os.path.dirname(os.path.abspath(__file__))
+    ROOT = os.path.dirname(BASE)
+
+
+def _user_data_dir():
+    """打包后默认数据目录：各平台的用户数据目录，保证可写。"""
+    if sys.platform == "win32":
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+    elif sys.platform == "darwin":
+        base = os.path.expanduser("~/Library/Application Support")
+    else:
+        base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+    return os.path.join(base, "local-chat-search", "data")
+
+
+def _default_data_dir():
+    env = os.environ.get("CHAT_SEARCH_DATA")
+    if env:
+        return os.path.expanduser(env)
+    if FROZEN:
+        # 便携模式：可执行文件同级存在 data/ 就用它（U 盘、免安装场景）
+        portable = os.path.join(ROOT, "data")
+        if os.path.isdir(portable):
+            return portable
+        return _user_data_dir()
+    return os.path.join(ROOT, "data")
+
+
+DATA = _default_data_dir()
 DB = os.path.join(DATA, "chat_search.db")
 INDEX = os.path.join(BASE, "index.html")
 
-VERSION = "2.1.0"
+VERSION = "2.2.0"
 PORT_TRIES = 20  # 端口被占用时向后自动尝试的次数
 
 
@@ -46,7 +86,8 @@ def _parse_port(argv):
 
 PORT = _parse_port(sys.argv[1:])
 
-sys.path.insert(0, BASE)
+if not FROZEN:
+    sys.path.insert(0, BASE)
 import importer  # noqa: E402
 
 os.makedirs(DATA, exist_ok=True)
@@ -553,6 +594,23 @@ class Handler(BaseHTTPRequestHandler):
                 pass
 
 
+def _alert(message):
+    """打包版双击运行时没有控制台，出错只能弹窗告知用户。"""
+    sys.stderr.write(message + "\n")
+    if not FROZEN:
+        return
+    try:
+        if sys.platform == "darwin":
+            import subprocess
+            script = 'display alert "聊天记录检索" message %s as critical' % json.dumps(message)
+            subprocess.Popen(["osascript", "-e", script])
+        elif sys.platform == "win32":
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(0, message, "聊天记录检索", 0x10)
+    except Exception:
+        pass
+
+
 def platform_label():
     """给启动横幅用的人类可读平台名。"""
     if sys.platform == "win32":
@@ -582,9 +640,12 @@ def main():
                 stream.reconfigure(encoding="utf-8", errors="replace")
             except Exception:
                 pass
-    print("local-chat-search v%s · %s · Python %d.%d.%d"
-          % (VERSION, platform_label(), *sys.version_info[:3]))
+    print("local-chat-search v%s · %s · Python %d.%d.%d%s"
+          % (VERSION, platform_label(), *sys.version_info[:3],
+             "（打包版）" if FROZEN else ""))
     print("数据目录: %s" % DATA)
+    if FROZEN:
+        print("提示: 想改成便携模式，可在程序同目录新建 data 文件夹")
     if db_ready():
         print("数据库: %s" % DB)
     else:
@@ -608,4 +669,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception as exc:  # 打包版没有控制台，异常必须弹窗，否则用户只看到"闪一下就没了"
+        _alert("启动失败：%s\n\n如果反复失败，请把这条信息发给开发者。" % exc)
+        raise
+

@@ -23,7 +23,32 @@ This project does exactly one thing: **make the export searchable on your own ma
 - Single process, no dependencies, no server, no account, no telemetry
 - Format-agnostic: any export with a time / sender / content field will ingest
 
-## Quick start
+## Download (no Python, no terminal)
+
+Non-technical users should start here: grab the prebuilt app from [**Releases**](https://github.com/D-if-fi/local-chat-search/releases/latest). Nothing to install.
+
+| Platform | File | How to run |
+| --- | --- | --- |
+| macOS | `local-chat-search-macos.zip` | unzip → double-click `local-chat-search.app` |
+| Windows | `local-chat-search-windows.exe` | double-click the `.exe` |
+
+The app starts the local server and opens the search page by itself — no terminal window, no commands.
+
+The builds are **unsigned**, so the very first launch asks for one extra click:
+
+- **macOS** — "Apple could not verify…": right-click the app → **Open** → **Open** again. (Or System Settings → Privacy & Security → **Open Anyway**.)
+- **Windows** — SmartScreen "Windows protected your PC": **More info** → **Run anyway**.
+
+Where the data lives after that:
+
+| | Default | Portable (keep next to the app) |
+| --- | --- | --- |
+| macOS | `~/Library/Application Support/local-chat-search/data` | create a `data/` folder next to the `.app` |
+| Windows | `%LOCALAPPDATA%\local-chat-search\data` | create a `data/` folder next to the `.exe` |
+
+Quit the app to stop the server (macOS: Ctrl-click the Dock icon → Quit; Windows: close the console window).
+
+## Run from source
 
 Requires **Python 3.8+** (macOS, Windows, Linux). No `pip install`, no virtualenv.
 
@@ -59,6 +84,18 @@ python3 app/server.py            # http://127.0.0.1:8777
 On first launch the page shows an import wizard — drag your export zip onto the window and it ingests in the background. You can drop files onto the page at any time to add more.
 
 > macOS: if double-clicking `start.command` says it "cannot be opened", right-click → Open, or run `chmod +x start.command start.sh` once.
+
+## Build the binaries yourself
+
+Releases are produced by GitHub Actions (`.github/workflows/release.yml`) on every `v*` tag. To build locally:
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install pyinstaller
+python tools/build_app.py
+```
+
+Output: `build/dist/local-chat-search.app` (macOS) or `build/dist/local-chat-search.exe` (Windows). The runtime app still uses the standard library only — PyInstaller is a build-time tool, not a dependency of the shipped program.
 
 ## Supported input
 
