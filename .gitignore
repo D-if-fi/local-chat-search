@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+._*
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# 数据目录（一定不要提交：里面是你的聊天记录）
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 本地导出的原始包
+*.zip
+!docs/*.zip
+*.log

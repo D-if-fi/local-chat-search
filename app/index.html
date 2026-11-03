@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>聊天记录检索</title>
+<style>
+:root{
+  --bg:#0e1014; --bg2:#151821; --bg3:#1c202b; --line:#262b38;
+  --fg:#d8dce6; --fg2:#8b93a7; --acc:#4c8dff; --acc2:#2bd6a4; --warn:#ffb454;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg);color:var(--fg);
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#2c3242;border-radius:6px}
+::-webkit-scrollbar-track{background:transparent}
+
+header{
+  display:flex;align-items:center;gap:14px;padding:12px 20px;
+  background:var(--bg2);border-bottom:1px solid var(--line);flex:0 0 auto;
+}
+h1{font-size:15px;margin:0;font-weight:600;letter-spacing:.3px}
+h1 span{color:var(--acc)}
+.meta{color:var(--fg2);font-size:12px}
+.meta b{color:var(--fg);font-weight:600}
+
+.search-wrap{padding:12px 20px 0;background:var(--bg2);flex:0 0 auto}
+.bar{display:flex;gap:8px}
+#q{
+  flex:1;height:40px;padding:0 14px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg);color:var(--fg);font-size:15px;outline:none;
+}
+#q:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(76,141,255,.14)}
+button{
+  height:40px;padding:0 18px;border-radius:9px;border:1px solid var(--line);
+  background:var(--bg3);color:var(--fg);cursor:pointer;font-size:14px;
+}
+button:hover{background:#232838}
+button.primary{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+button.primary:hover{background:#3d7cf0}
+button.ghost{background:transparent;height:30px;padding:0 10px;font-size:12px;color:var(--fg2)}
+button.ghost:hover{color:var(--fg)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 12px;align-items:center}
+.picker{position:relative}
+.picker>input{
+  width:170px;height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--fg);font-size:13px;outline:none;
+}
+.picker>input:focus{border-color:var(--acc)}
+.picker>input::placeholder{color:#576074}
+.drop{
+  position:absolute;top:36px;left:0;width:300px;max-height:320px;overflow:auto;
+  background:var(--bg3);border:1px solid var(--line);border-radius:9px;z-index:60;
+  box-shadow:0 12px 32px rgba(0,0,0,.55);display:none;
+}
+.drop.show{display:block}
+.drop .it{padding:7px 11px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.drop .it:hover,.drop .it.on{background:#2a3142}
+.drop .it em{color:var(--fg2);font-style:normal;font-size:11px;flex:0 0 auto}
+.drop .empty{padding:10px;color:var(--fg2);font-size:12px}
+input[type=date]{
+  height:32px;padding:0 8px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--fg);font-size:13px;outline:none;
+}
+select{
+  height:32px;padding:0 8px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--fg);font-size:13px;outline:none;
+}
+label.chk{display:flex;align-items:center;gap:5px;color:var(--fg2);font-size:12px;cursor:pointer}
+
+main{flex:1;display:flex;min-height:0;border-top:1px solid var(--line)}
+.list-pane{width:46%;min-width:380px;max-width:720px;display:flex;flex-direction:column;min-height:0}
+.status{
+  padding:8px 20px;font-size:12px;color:var(--fg2);border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;flex:0 0 auto;
+}
+.status b{color:var(--fg)}
+#list{flex:1;overflow:auto;overscroll-behavior:contain}
+.item{
+  padding:11px 20px;border-bottom:1px solid #1b1f29;cursor:pointer;
+}
+.item:hover{background:#141822}
+.item.active{background:#22384f;box-shadow:inset 4px 0 0 var(--acc),inset 0 0 0 1px #3a5f92}
+.item .top{display:flex;gap:8px;align-items:baseline;font-size:12px;margin-bottom:3px}
+.item .chat{color:var(--acc);font-weight:600;max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .who{color:var(--fg)}
+.item .ts{color:var(--fg2);margin-left:auto;flex:0 0 auto}
+.item .txt{color:#b9c0d0;font-size:13px;line-height:1.65;word-break:break-word;overflow-wrap:anywhere}
+.item .txt mark{background:rgba(255,196,0,.24);color:#ffdf8a;border-radius:3px;padding:0 1px}
+.tag{
+  display:inline-block;font-size:10px;padding:0 5px;border-radius:4px;
+  border:1px solid var(--line);color:var(--fg2);vertical-align:middle;margin-left:5px;
+}
+.empty{padding:60px 20px;text-align:center;color:var(--fg2)}
+.empty b{display:block;color:var(--fg);font-size:15px;margin-bottom:6px}
+
+.panel{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg);border-left:1px solid var(--line)}
+.panel-head{
+  padding:10px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;
+  flex:0 0 auto;background:var(--bg2);
+}
+.panel-head .t{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.panel-head .s{color:var(--fg2);font-size:12px;flex:0 0 auto}
+#convo{flex:1;overflow:auto;padding:16px 18px 40px;scroll-behavior:smooth}
+.msg{padding:7px 10px;border-radius:8px;margin-bottom:3px}
+.msg.focus{background:#17233a;box-shadow:inset 0 0 0 1px #2b4a7d}
+.msg .mh{font-size:11.5px;color:var(--fg2);margin-bottom:2px;display:flex;gap:8px;align-items:baseline}
+.msg .mh b{color:#9ec1ff;font-weight:600}
+.msg .mh .ty{color:#5b6478}
+.msg .mb{font-size:13.5px;line-height:1.75;color:#cfd5e2;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.msg.deleted .mb{opacity:.45;text-decoration:line-through}
+.msg.sys .mb{color:#6f7789;font-style:italic}
+.more{padding:10px;text-align:center}
+.hint{color:var(--fg2);font-size:12px;line-height:1.8}
+kbd{background:#232838;border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:11px;color:var(--fg)}
+
+/* ---------- 导入向导 ---------- */
+#onboard{
+  position:fixed;inset:0;z-index:200;background:rgba(10,12,16,.94);
+  display:none;align-items:center;justify-content:center;padding:24px;
+  backdrop-filter:blur(4px);
+}
+#onboard.show{display:flex}
+.card{
+  width:min(640px,100%);background:var(--bg2);border:1px solid var(--line);
+  border-radius:16px;padding:28px 30px;box-shadow:0 24px 70px rgba(0,0,0,.6);
+}
+.card h2{margin:0 0 6px;font-size:19px;font-weight:600}
+.card p.sub{margin:0 0 20px;color:var(--fg2);font-size:13px}
+#dropzone{
+  border:1.5px dashed #33405a;border-radius:12px;padding:34px 20px;text-align:center;
+  cursor:pointer;transition:.15s;background:rgba(76,141,255,.03);
+}
+#dropzone:hover,#dropzone.over{border-color:var(--acc);background:rgba(76,141,255,.09)}
+#dropzone .big{font-size:15px;margin-bottom:6px}
+#dropzone .sm{color:var(--fg2);font-size:12.5px}
+.fmt{margin:18px 0 0;padding:14px 16px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.fmt div{font-size:12.5px;color:var(--fg2);line-height:1.9}
+.fmt b{color:var(--fg)}
+#prog{display:none;margin-top:20px}
+#prog.show{display:block}
+.bar-bg{height:7px;background:#20262f;border-radius:5px;overflow:hidden}
+.bar-fg{height:100%;width:0;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
+.ptxt{display:flex;justify-content:space-between;font-size:12px;color:var(--fg2);margin-top:9px}
+.err{color:#ff7b7b;font-size:12.5px;margin-top:12px;display:none}
+.err.show{display:block}
+.card .ops{display:flex;gap:10px;margin-top:18px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<header>
+  <h1>聊天记录<span>检索</span></h1>
+  <div class="meta" id="stat">加载中…</div>
+  <button class="ghost" id="btnImport" style="margin-left:auto">导入 / 追加记录</button>
+</header>
+
+<div class="search-wrap">
+  <div class="bar">
+    <input id="q" placeholder="输入关键词搜索，空格分隔多个词" autocomplete="off">
+    <button class="primary" id="btn">搜索</button>
+    <button id="reset" title="清空筛选">重置</button>
+  </div>
+  <div class="filters">
+    <div class="picker" id="pkChat">
+      <input placeholder="会话（可搜索）" autocomplete="off">
+      <div class="drop"></div>
+    </div>
+    <div class="picker" id="pkSender">
+      <input placeholder="发送人（可搜索）" autocomplete="off">
+      <div class="drop"></div>
+    </div>
+    <input type="date" id="start" title="起始日期">
+    <input type="date" id="end" title="截止日期">
+    <select id="mtype"><option value="">全部类型</option></select>
+    <label class="chk"><input type="checkbox" id="deleted"> 含已撤回</label>
+  </div>
+</div>
+
+<main>
+  <div class="list-pane">
+    <div class="status" id="status">输入关键词开始检索</div>
+    <div id="list"><div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div></div>
+  </div>
+  <div class="panel" id="panel">
+    <div class="panel-head">
+      <div class="t" id="pTitle">对话上下文</div>
+      <div class="s" id="pSub"></div>
+      <button class="ghost" id="pClose" style="margin-left:auto">关闭</button>
+    </div>
+    <div id="convo">
+      <div class="empty" style="padding:40px 18px">
+        <b>点击左侧任一结果</b>
+        右侧显示该条消息前后各 12 条对话，可继续加载更多。<br>
+        <span class="hint">快捷键：<kbd>Enter</kbd> 搜索 · <kbd>Esc</kbd> 关闭详情</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 导入向导 -->
+<div id="onboard">
+  <div class="card">
+    <h2 id="obTitle">导入你的聊天记录</h2>
+    <p class="sub" id="obSub">所有数据只保存在这台电脑上，不会上传到任何服务器。</p>
+
+    <div id="dropzone">
+      <div class="big">把聊天记录导出包拖到这里</div>
+      <div class="sm">或点击选择文件 · 支持 .zip / .txt / .json</div>
+    </div>
+
+    <div class="fmt">
+      <div><b>支持的导出格式</b></div>
+      <div>· 飞书聊天记录导出包（zip，含 chats/*.json）</div>
+      <div>· 通用 JSON / JSONL，自动识别时间、发送人、内容字段</div>
+      <div>· 纯文本导出（行首带时间戳，如 <b>2024-01-01 12:00 张三: 内容</b>）</div>
+      <div>· 重复导入同一份导出包不会产生重复数据，可安全追加新导出的记录</div>
+    </div>
+
+    <div id="prog">
+      <div class="bar-bg"><div class="bar-fg" id="barfg"></div></div>
+      <div class="ptxt"><span id="phase">准备中…</span><span id="pnum"></span></div>
+    </div>
+    <div class="err" id="err"></div>
+
+    <div class="ops">
+      <button class="ghost" id="obClose" style="display:none">稍后再说</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const api = (p, q={}) => {
+  const u = new URL(p, location.origin);
+  Object.entries(q).forEach(([k,v]) => { if(v!=='' && v!=null) u.searchParams.set(k,v); });
+  return fetch(u).then(r => r.json());
+};
+const esc = s => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+let state = {q:'', chat_id:'', chat_name:'', sender:'', start:'', end:'', mtype:'', deleted:'', offset:0, total:0, terms:[], items:[]};
+let focusId = null, hasData = false, polling = null;
+
+function hi(text, terms){
+  let h = esc(text);
+  if(!terms || !terms.length) return h;
+  try{
+    const re = new RegExp('(' + terms.map(escRe).join('|') + ')', 'gi');
+    return h.replace(re, '<mark>$1</mark>');
+  }catch(e){ return h; }
+}
+
+// ---------- 通用可搜索下拉 ----------
+function picker(rootId, onPick, fetchList){
+  const root = $(rootId), inp = root.querySelector('input'), drop = root.querySelector('.drop');
+  let timer = null, focusIdx = -1;
+  function render(list, kw){
+    if(!list.length){ drop.innerHTML = '<div class="empty">无匹配</div>'; return; }
+    drop.innerHTML = list.map((it,i) =>
+      `<div class="it${i===focusIdx?' on':''}" data-i="${i}">${hi(it.label, kw?[kw]:[])}<em>${it.n||''}</em></div>`
+    ).join('');
+    drop.querySelectorAll('.it').forEach(el => {
+      el.onclick = () => { onPick(list[+el.dataset.i]); drop.classList.remove('show'); };
+    });
+  }
+  async function load(){
+    const kw = inp.value.trim();
+    focusIdx = -1;
+    render(await fetchList(kw), kw);
+  }
+  inp.addEventListener('focus', () => { drop.classList.add('show'); load(); });
+  inp.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(load, 160); });
+  inp.addEventListener('keydown', e => {
+    const its = drop.querySelectorAll('.it');
+    if(e.key === 'ArrowDown'){ e.preventDefault(); focusIdx = Math.min(focusIdx+1, its.length-1); its.forEach((x,i)=>x.classList.toggle('on', i===focusIdx)); }
+    else if(e.key === 'ArrowUp'){ e.preventDefault(); focusIdx = Math.max(focusIdx-1, 0); its.forEach((x,i)=>x.classList.toggle('on', i===focusIdx)); }
+    else if(e.key === 'Enter' && focusIdx >= 0){ e.preventDefault(); its[focusIdx].click(); }
+    else if(e.key === 'Escape'){ drop.classList.remove('show'); }
+  });
+  document.addEventListener('click', e => { if(!root.contains(e.target)) drop.classList.remove('show'); });
+  return { input: inp, set: v => { inp.value = v; } };
+}
+
+const chatPicker = picker('#pkChat', it => { state.chat_id = it.id; state.chat_name = it.label; chatPicker.set(it.label); doSearch(true); },
+  kw => api('/api/chats', {q:kw}).then(r => r.map(c => ({id:c.chat_id, label:c.name, n:c.cnt}))));
+
+const senderPicker = picker('#pkSender', it => { state.sender = it.id; senderPicker.set(it.label); doSearch(true); },
+  kw => api('/api/senders', {q:kw}).then(r => r.map(s => ({id:s.sender, label:s.sender, n:s.n}))));
+
+// ---------- 搜索 ----------
+async function doSearch(resetOffset){
+  state.q = $('#q').value.trim();
+  state.start = $('#start').value;
+  state.end = $('#end').value;
+  state.mtype = $('#mtype').value;
+  state.deleted = $('#deleted').checked ? '1' : '';
+  if(resetOffset) state.offset = 0;
+  if(!state.q && !state.chat_id && !state.sender && !state.start && !state.end && !state.mtype){
+    $('#status').textContent = '输入关键词开始检索';
+    $('#list').innerHTML = '<div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div>';
+    return;
+  }
+  $('#status').textContent = '检索中…';
+  const t0 = performance.now();
+  const r = await api('/api/search', {
+    q: state.q, chat_id: state.chat_id, sender: state.sender,
+    start: state.start, end: state.end, mtype: state.mtype, deleted: state.deleted,
+    limit: 50, offset: state.offset
+  });
+  state.total = r.total; state.terms = r.terms || [];
+  const ms = Math.round(performance.now() - t0);
+  $('#status').innerHTML = `命中 <b>${r.total.toLocaleString()}</b> 条 · 用时 <b>${ms}ms</b>` +
+    (r.mode === 'like' ? ' · 关键词较短，已用模糊扫描' : '');
+
+  if(resetOffset){ state.items = r.items; } else { state.items = state.items.concat(r.items); }
+  renderList(resetOffset);
+}
+
+function renderList(scrollTop){
+  const box = $('#list');
+  if(!state.items.length){
+    box.innerHTML = '<div class="empty"><b>没有匹配结果</b>换个关键词，或放宽时间范围 / 去掉筛选条件</div>';
+    return;
+  }
+  box.innerHTML = state.items.map(it => `
+    <div class="item" data-id="${it.id}">
+      <div class="top">
+        <span class="chat" title="${esc(it.chat_name)}">${esc(it.chat_name)}</span>
+        <span class="who">${esc(it.sender || '系统')}</span>
+        <span class="ts">${esc(it.ts)}</span>
+      </div>
+      <div class="txt">${hi(it.snippet, state.terms)}${it.deleted?'<span class="tag">已撤回</span>':''}${it.msg_type && it.msg_type!=='text'?`<span class="tag">${esc(it.msg_type)}</span>`:''}</div>
+    </div>`).join('') +
+    (state.items.length < state.total
+      ? `<div class="more"><button id="more">加载更多（剩余 ${state.total - state.items.length} 条）</button></div>`
+      : `<div class="more" style="color:var(--fg2);font-size:12px">已显示全部 ${state.items.length} 条</div>`);
+
+  box.querySelectorAll('.item').forEach(el => {
+    el.onclick = () => { box.querySelectorAll('.item').forEach(x=>x.classList.remove('active')); el.classList.add('active'); openContext(+el.dataset.id); };
+  });
+  const mb = $('#more');
+  if(mb) mb.onclick = () => { state.offset = state.items.length; doSearch(false); };
+  if(scrollTop) box.scrollTop = 0;
+}
+
+// ---------- 上下文 ----------
+async function openContext(id){
+  focusId = id;
+  $('#convo').innerHTML = '<div class="empty">加载中…</div>';
+  const r = await api('/api/context', {id, before:12, after:12});
+  $('#pTitle').textContent = r.chat_name;
+  $('#pSub').textContent = `${r.items.length} 条上下文`;
+  $('#panel').classList.add('show');
+  $('#convo').innerHTML = r.items.map(m => msgHtml(m, m.id === r.focus)).join('') +
+    `<div class="more"><button class="ghost" id="ctxMore">查看该会话更多消息</button></div>`;
+  const fe = $('#convo').querySelector('.msg.focus');
+  if(fe) fe.scrollIntoView({block:'center'});
+  $('#ctxMore').onclick = () => loadChat(r.chat_id, 0, true);
+}
+
+function msgHtml(m, focus){
+  const cls = ['msg'];
+  if(focus) cls.push('focus');
+  if(m.deleted) cls.push('deleted');
+  if(m.msg_type === 'system') cls.push('sys');
+  return `<div class="${cls.join(' ')}" id="m${m.id}">
+    <div class="mh"><b>${esc(m.sender || '系统')}</b><span>${esc(m.ts)}</span>
+      ${m.msg_type && m.msg_type!=='text' ? `<span class="ty">${esc(m.msg_type)}</span>`:''}
+    </div>
+    <div class="mb">${hi(m.text || '', state.terms)}</div>
+  </div>`;
+}
+
+async function loadChat(cid, offset, replace){
+  const r = await api('/api/chat', {chat_id: cid, limit: 100, offset});
+  const html = r.items.map(m => msgHtml(m, false)).join('');
+  if(replace){
+    $('#convo').innerHTML = html + (r.total > r.items.length ? `<div class="more"><button class="ghost" id="ctxMore">加载更早的消息（共 ${r.total} 条）</button></div>` : '');
+  }else{
+    $('#convo').insertAdjacentHTML('beforeend', html);
+  }
+  const mb = $('#ctxMore');
+  if(mb) mb.onclick = () => {
+    const next = $('#convo').querySelectorAll('.msg').length;
+    mb.remove();
+    loadChat(cid, next, false);
+  };
+}
+
+// ---------- 导入 ----------
+function openOnboard(first){
+  $('#onboard').classList.add('show');
+  $('#obClose').style.display = first ? 'none' : 'block';
+  if(first){ $('#obTitle').textContent = '导入你的聊天记录'; $('#obSub').textContent = '所有数据只保存在这台电脑上，不会上传到任何服务器。'; }
+  else { $('#obTitle').textContent = '追加导入'; $('#obSub').textContent = '已有的记录不会重复写入，只会补入新内容。'; }
+  $('#prog').classList.remove('show');
+  $('#err').classList.remove('show');
+}
+
+function startImport(file, replace){
+  if(!file) return;
+  if(!/\.(zip|txt|log|md|json|jsonl|ndjson)$/i.test(file.name)){
+    $('#err').textContent = '请选择 .zip / .txt / .json / .jsonl 文件';
+    $('#err').classList.add('show');
+    return;
+  }
+  $('#onboard').classList.add('show');
+  $('#prog').classList.add('show');
+  $('#err').classList.remove('show');
+  $('#phase').textContent = '上传中…';
+  $('#barfg').style.width = '0%';
+  $('#pnum').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/import/upload?name=' + encodeURIComponent(file.name) + (replace ? '&replace=1' : ''));
+  xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+  xhr.upload.onprogress = e => {
+    if(e.lengthComputable){
+      const pct = e.loaded / e.total * 92;
+      $('#barfg').style.width = pct + '%';
+      $('#phase').textContent = '上传中… ' + Math.round(e.loaded / e.total * 100) + '%';
+    }
+  };
+  xhr.onload = () => {
+    let r = {};
+    try{ r = JSON.parse(xhr.responseText); }catch(e){}
+    if(xhr.status !== 200){
+      $('#err').textContent = r.error || ('上传失败（' + xhr.status + '）');
+      $('#err').classList.add('show');
+      return;
+    }
+    pollStatus();
+  };
+  xhr.onerror = () => {
+    $('#err').textContent = '上传失败，请确认服务仍在运行';
+    $('#err').classList.add('show');
+  };
+  xhr.send(file);
+}
+
+function pollStatus(){
+  clearInterval(polling);
+  polling = setInterval(async () => {
+    let s;
+    try{ s = await api('/api/import/status'); }catch(e){ return; }
+    if(s.state === 'running'){
+      $('#phase').textContent = s.phase || '处理中…';
+      $('#pnum').textContent = s.messages ? s.messages.toLocaleString() + ' 条' : '';
+      const base = s.total ? (s.done / s.total) : 0;
+      $('#barfg').style.width = Math.max(92, Math.min(99, 92 + base * 7)) + '%';
+    }else if(s.state === 'done'){
+      clearInterval(polling); polling = null;
+      const added = s.inserted == null ? s.messages : s.inserted;
+      $('#barfg').style.width = '100%';
+      $('#phase').textContent = '完成';
+      $('#pnum').textContent = added.toLocaleString() + ' 条新增 · ' + (s.took||0) + 's';
+      setTimeout(async () => {
+        $('#onboard').classList.remove('show');
+        await refreshAll();
+        if(added > 0){
+          $('#status').innerHTML = `本次新增 <b>${added.toLocaleString()}</b> 条消息，可开始检索`;
+        }else{
+          $('#status').innerHTML = `这批记录此前已导入过，没有新增内容（共 <b>${(s.messages||0).toLocaleString()}</b> 条）`;
+        }
+      }, 700);
+    }else if(s.state === 'error'){
+      clearInterval(polling); polling = null;
+      $('#err').textContent = '导入失败：' + (s.error || '未知错误');
+      $('#err').classList.add('show');
+      $('#phase').textContent = '失败';
+    }
+  }, 700);
+}
+
+async function refreshAll(){
+  const s = await api('/api/stats');
+  hasData = !s.empty && s.messages > 0;
+  if(!hasData){
+    $('#stat').textContent = '暂无数据';
+    return;
+  }
+  $('#stat').innerHTML = `<b>${s.messages.toLocaleString()}</b> 条消息 · <b>${s.chats.toLocaleString()}</b> 个会话 · ` +
+    `<b>${s.senders.toLocaleString()}</b> 位发送者 · ${s.first} ~ ${s.last}` +
+    (s.source ? ` · 来源 ${esc(s.source)}` : '');
+  const types = await api('/api/types');
+  $('#mtype').innerHTML = '<option value="">全部类型</option>' +
+    types.map(t => `<option value="${esc(t.msg_type)}">${esc(t.msg_type)} (${t.n})</option>`).join('');
+}
+
+// ---------- 事件绑定 ----------
+$('#btn').onclick = () => doSearch(true);
+$('#q').addEventListener('keydown', e => { if(e.key === 'Enter') doSearch(true); });
+$('#start').onchange = $('#end').onchange = $('#mtype').onchange = $('#deleted').onchange = () => doSearch(true);
+$('#reset').onclick = () => {
+  $('#q').value = ''; $('#start').value = ''; $('#end').value = ''; $('#mtype').value = '';
+  $('#deleted').checked = false;
+  chatPicker.set(''); senderPicker.set('');
+  Object.assign(state, {q:'', chat_id:'', chat_name:'', sender:'', start:'', end:'', mtype:'', deleted:'', offset:0, items:[]});
+  $('#status').textContent = '输入关键词开始检索';
+  $('#list').innerHTML = '<div class="empty"><b>准备就绪</b>支持消息全文、会话名、发送人、时间范围组合筛选</div>';
+  $('#q').focus();
+};
+$('#pClose').onclick = () => { $('#panel').classList.remove('show'); $('#convo').innerHTML = '<div class="empty" style="padding:40px 18px"><b>点击左侧任一结果</b>右侧显示该条消息前后各 12 条对话。</div>'; };
+document.addEventListener('keydown', e => { if(e.key === 'Escape') $('#pClose').click(); });
+
+$('#btnImport').onclick = () => openOnboard(!hasData);
+$('#obClose').onclick = () => $('#onboard').classList.remove('show');
+
+const dz = $('#dropzone'), fi = document.createElement('input');
+fi.type = 'file'; fi.accept = '.zip,.txt,.log,.md,.json,.jsonl,.ndjson';
+dz.onclick = () => fi.click();
+fi.onchange = () => { if(fi.files[0]) startImport(fi.files[0], !hasData); fi.value = ''; };
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('over');
+  if(e.dataTransfer.files[0]) startImport(e.dataTransfer.files[0], !hasData);
+});
+// 整页拖入也可导入
+window.addEventListener('dragover', e => { if(hasData) { e.preventDefault(); } });
+window.addEventListener('drop', e => {
+  if(!hasData) return;
+  e.preventDefault();
+  if(e.dataTransfer.files[0]){
+    openOnboard(false);
+    startImport(e.dataTransfer.files[0], false);
+  }
+});
+
+(async () => {
+  await refreshAll();
+  if(!hasData){
+    $('#stat').textContent = '暂无数据';
+    openOnboard(true);
+  }
+  // 服务端可能正在导入（刷新页面时）
+  const s = await api('/api/import/status');
+  if(s.state === 'running'){ $('#onboard').classList.add('show'); $('#prog').classList.add('show'); pollStatus(); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+[
+  {"chat_name": "产品讨论群", "sender": "张三", "create_time": "2024-03-01 10:20:00", "content": "这周先把检索做到可用，带宽成本再压一压"},
+  {"chat_name": "产品讨论群", "sender": "李四", "create_time": "2024-03-01 10:22:30", "content": "好的，我先出个方案，周五评审"},
+  {"chat_name": "产品讨论群", "sender": "王五", "create_time": "2024-03-01 10:25:00", "content": "记得把割接窗口避开业务高峰"},
+  {"chat_name": "客户对接群", "sender": "赵六", "create_time": 1709269500000, "content": "合同附件已发送，请查收"},
+  {"chat_name": "客户对接群", "sender": "张三", "create_time": 1709269800000, "content": "收到，今天走内部审批流程"}
+]

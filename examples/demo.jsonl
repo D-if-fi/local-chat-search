@@ -1,0 +1,4 @@
+{"chat_name": "运维值班", "from": "monitor", "timestamp": 1709271000, "text": "广州节点出口丢包率 3.2%，已触发告警"}
+{"chat_name": "运维值班", "from": "值班-小林", "timestamp": 1709271060, "text": "我看下，先摘流量再排查"}
+{"chat_name": "运维值班", "from": "monitor", "timestamp": 1709271300, "text": "丢包率回落至 0.1%，告警恢复"}
+{"chat_name": "运维值班", "from": "值班-小林", "timestamp": 1709271360, "text": "记一下，明天复盘写进变更记录"}
