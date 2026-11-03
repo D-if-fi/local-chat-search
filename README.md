@@ -11,6 +11,10 @@ AIGC:
 
 # local-chat-search
 
+[![CI](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml/badge.svg)](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+
 把自己导出的聊天记录变成**离线、可全文检索、数据不出本机**的本地资料库。
 
 零第三方依赖（只用 Python 标准库），一条命令或双击脚本就能跑；所有数据只写本机的 `data/chat_search.db`，服务只监听 `127.0.0.1`，不联网、不上传、不需要账号。

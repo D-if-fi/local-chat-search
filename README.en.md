@@ -11,6 +11,10 @@ AIGC:
 
 # local-chat-search
 
+[![CI](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml/badge.svg)](https://github.com/D-if-fi/local-chat-search/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+
 Turn your exported chat history into an **offline, full-text searchable** local database. No data ever leaves your machine.
 
 Zero third-party dependencies — Python standard library only. The service binds to `127.0.0.1`, writes nothing but `data/chat_search.db`, and requires no account, no network, no telemetry.

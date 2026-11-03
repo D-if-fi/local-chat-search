@@ -20,6 +20,8 @@ AIGC:
 - 修复：单文件导入时用临时文件名当会话名的问题
 - 修复：不同单文件因同名被并成同一个会话桶的问题
 - 新增端到端冒烟测试 `tests/smoke_test.py` 与 GitHub Actions CI
+- 修复：Windows 上 stdout 非 UTF-8 导致启动横幅 `UnicodeEncodeError`，服务直接退出
+- 新增 `CHAT_SEARCH_NO_BROWSER=1`，脚本/CI 场景下跳过自动打开浏览器
 
 ## v1.0.0 — 首个可用版本
 
