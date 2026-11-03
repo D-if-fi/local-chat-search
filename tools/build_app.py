@@ -20,6 +20,14 @@ import shutil
 import subprocess
 import sys
 
+# Windows 控制台（含 GitHub Actions 的 cp1252 runner）打印中文会 UnicodeEncodeError，
+# 构建脚本的输出一律用 ASCII，避免平台差异导致构建失败。
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NAME = "local-chat-search"
 
@@ -46,7 +54,7 @@ def build() -> str:
         cmd.append("--onefile")
     cmd.append(os.path.join("app", "server.py"))
 
-    print("运行:", " ".join(cmd))
+    print("running:", " ".join(cmd))
     subprocess.check_call(cmd, cwd=ROOT)
 
     if sys.platform == "darwin":
@@ -64,4 +72,4 @@ if __name__ == "__main__":
             size += sum(os.path.getsize(os.path.join(root, f)) for f in files)
     else:
         size = os.path.getsize(out)
-    print(f"\n完成: {out}  ({size / 1024 / 1024:.1f} MB)")
+    print(f"\nbuilt: {out}  ({size / 1024 / 1024:.1f} MB)")

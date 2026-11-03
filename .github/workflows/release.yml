@@ -22,6 +22,9 @@ jobs:
           - os: windows-latest
             asset: local-chat-search-windows.exe
     runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
     steps:
       - uses: actions/checkout@v4
 
