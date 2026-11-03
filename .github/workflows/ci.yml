@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    name: 语法检查 + 端到端冒烟
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.8", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: 语法检查（无第三方依赖，只编译）
+        run: python -m py_compile app/server.py app/importer.py tools/csv_to_jsonl.py
+
+      - name: 端到端冒烟测试
+        run: python tests/smoke_test.py
+
+      - name: 检查仓库里没有误提交数据库
+        shell: bash
+        run: |
+          if git ls-files | grep -E '\.(db|db-wal|db-shm)$|^data/'; then
+            echo "::error::仓库中不应包含 data/ 或 .db 文件（可能泄露个人聊天记录）"
+            exit 1
+          fi
