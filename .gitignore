@@ -28,3 +28,7 @@ data/
 # 打包产物
 build/
 *.spec
+
+# 仓库内的下载目录要保留成品，不受上面的 *.zip / *.exe 规则影响
+!downloads/*.zip
+!downloads/*.exe

@@ -11,6 +11,9 @@
 
 [English](README.md) | 简体中文
 
+> **只想用、不想折腾？** 不用装 Python，直接下载双击：
+> [macOS 版](downloads/local-chat-search-macos.zip) · [Windows 版](downloads/local-chat-search-windows.exe)
+
 ![界面截图](docs/screenshot.png)
 
 ## 为什么做这个

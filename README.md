@@ -11,6 +11,9 @@ Zero third-party dependencies — Python standard library only. One command, or 
 
 English | [简体中文](README.zh-CN.md)
 
+> **Just want to use it?** No Python needed — download and double-click:
+> [macOS app](downloads/local-chat-search-macos.zip) · [Windows exe](downloads/local-chat-search-windows.exe)
+
 ![Screenshot](docs/screenshot.png)
 
 ## Why

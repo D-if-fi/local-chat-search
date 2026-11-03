@@ -3,3 +3,5 @@
 *.ps1 text eol=crlf
 *.command text eol=lf
 *.png binary
+downloads/*.zip binary
+downloads/*.exe binary
