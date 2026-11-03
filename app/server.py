@@ -518,6 +518,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    # Windows 控制台与重定向输出默认不是 UTF-8，打印中文会 UnicodeEncodeError 直接把服务打断
+    if sys.platform == "win32":
+        for stream in (sys.stdout, sys.stderr):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except Exception:
+                pass
     if db_ready():
         print("数据库: %s" % DB)
     else:
@@ -525,11 +532,12 @@ def main():
     srv = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print("聊天记录检索已启动: http://127.0.0.1:%d" % PORT)
     print("按 Ctrl+C 停止")
-    try:
-        import webbrowser
-        threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:%d" % PORT)).start()
-    except Exception:
-        pass
+    if not os.environ.get("CHAT_SEARCH_NO_BROWSER"):
+        try:
+            import webbrowser
+            threading.Timer(1.0, lambda: webbrowser.open("http://127.0.0.1:%d" % PORT)).start()
+        except Exception:
+            pass
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_da968e81d75e11f18c3f52540064ee0f
+    ReservedCode1: fAkR6jLSTI/+ynP6cFuhoQZliscpHxGnpRJF3VoZ5dy48TiTT775yvojnGfkernhZtXK9hJZ3sL+2KZlRjBlhWJxZE/VXIA9qNbtOWBzThuhz2maBw4IVmNpUYSC6Jgu8MdPTE8L3/ePXILzCRC2/BdQ0GoBwSumSxBtrH3F2H9Bz8LC6sHKQiR24Qc=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_da968e81d75e11f18c3f52540064ee0f
+    ReservedCode2: fAkR6jLSTI/+ynP6cFuhoQZliscpHxGnpRJF3VoZ5dy48TiTT775yvojnGfkernhZtXK9hJZ3sL+2KZlRjBlhWJxZE/VXIA9qNbtOWBzThuhz2maBw4IVmNpUYSC6Jgu8MdPTE8L3/ePXILzCRC2/BdQ0GoBwSumSxBtrH3F2H9Bz8LC6sHKQiR24Qc=
+---
+
 # 架构说明
 
 代码总量约 1400 行，三个文件，没有框架。这份文档说明数据怎么流动、索引为什么这么设计，以及你想加东西时应该改哪里。
@@ -90,3 +101,4 @@ class MyParser:
 ## 前端
 
 `app/index.html` 单文件，无构建步骤，无外部 CDN：原生 `fetch` + DOM 操作，样式内联。首次打开（`/api/stats` 返回 `empty=true`）显示导入向导；页面任意位置可拖入文件追加导入。
+*（内容由AI生成，仅供参考）*

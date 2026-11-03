@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d8a81ac8d75e11f18c3f52540064ee0f
+    ReservedCode1: 18B1R7xFoOfnGxxPC0kKRF9zuxWz5EE6x6qztbLo/sqSS3dpjyFNRhmH0htvo5YKfsutOeySjm/m6RjqY1lc5DzuZuu/0PBi7Yb2xb3vvYF0fedEv2ISgiTbaIKfiH9HIMTumULa4G1CxAT0oAAkQqwKdAD1Un9GQc3wvuDMLiTn7G/no4/uycjmP+A=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d8a81ac8d75e11f18c3f52540064ee0f
+    ReservedCode2: 18B1R7xFoOfnGxxPC0kKRF9zuxWz5EE6x6qztbLo/sqSS3dpjyFNRhmH0htvo5YKfsutOeySjm/m6RjqY1lc5DzuZuu/0PBi7Yb2xb3vvYF0fedEv2ISgiTbaIKfiH9HIMTumULa4G1CxAT0oAAkQqwKdAD1Un9GQc3wvuDMLiTn7G/no4/uycjmP+A=
+---
+
 # 贡献指南
 
 感谢愿意改进这个项目。为了不破坏「零依赖、数据不出本机」这两条底线，提交前请确认下面几点。
@@ -56,3 +67,4 @@ docs: 补充 Windows 解压乱码说明
 - 报错信息或截图
 
 **不要**在 Issue 里粘贴真实聊天记录、导出包或数据库文件。需要样例数据时，请自己编一份结构相同的假数据。
+*（内容由AI生成，仅供参考）*

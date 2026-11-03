@@ -64,24 +64,41 @@ def check(cond, msg):
 
 
 def main():
+    # Windows 控制台默认非 UTF-8，直接 print 中文会崩；测试脚本自己也统一成 UTF-8
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
     workdir = tempfile.mkdtemp(prefix="chatsearch-smoke-")
     data_dir = os.path.join(workdir, "data")
     port = free_port()
-    env = dict(os.environ, CHAT_SEARCH_DATA=data_dir)
-    log = open(os.path.join(workdir, "server.log"), "w")
+    # PYTHONIOENCODING: Windows 上 stdout 默认 cp1252，打印中文会 UnicodeEncodeError 导致服务直接退出
+    env = dict(os.environ, CHAT_SEARCH_DATA=data_dir, PYTHONIOENCODING="utf-8",
+               CHAT_SEARCH_NO_BROWSER="1")
+    log_path = os.path.join(workdir, "server.log")
+    log = open(log_path, "w", encoding="utf-8", errors="replace")
     server = subprocess.Popen(
         [sys.executable, os.path.join(ROOT, "app", "server.py"), str(port)],
         cwd=ROOT, env=env, stdout=log, stderr=log, stdin=subprocess.DEVNULL)
     try:
         # 等端口起来
+        started = False
         for _ in range(50):
+            if server.poll() is not None:
+                break
             try:
                 api(port, "/api/stats", timeout=3)
+                started = True
                 break
             except Exception:
                 time.sleep(0.4)
-        else:
-            raise AssertionError("服务未能启动，日志见 %s" % log.name)
+        if not started:
+            log.flush()
+            with open(log_path, encoding="utf-8", errors="replace") as f:
+                tail = f.read()[-2000:]
+            raise AssertionError("服务未能启动（退出码 %s），服务端日志：\n%s"
+                                 % (server.poll(), tail or "(空)"))
 
         print("[1] 空库启动")
         st = api(port, "/api/stats")

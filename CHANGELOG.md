@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_da03a97ed75e11f1a286525400638852
+    ReservedCode1: +XPPWNAlNvhCnSzfMET0zjDtJAgYqenqdNYGtf32Kt8W2OmGj+mbMjtU5jDtCIipk6YdyrXNiSUF52OigXZPYCI9whIrWMK+2lKhzg/ZqnNa1JhgntRHVZMxbl7xx3wv9WpPiCPEgRZgsxo86Kh/eQFUVmtM2GxW5eNZ6xdqt7XAllLZa0SoudnMnvc=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_da03a97ed75e11f1a286525400638852
+    ReservedCode2: +XPPWNAlNvhCnSzfMET0zjDtJAgYqenqdNYGtf32Kt8W2OmGj+mbMjtU5jDtCIipk6YdyrXNiSUF52OigXZPYCI9whIrWMK+2lKhzg/ZqnNa1JhgntRHVZMxbl7xx3wv9WpPiCPEgRZgsxo86Kh/eQFUVmtM2GxW5eNZ6xdqt7XAllLZa0SoudnMnvc=
+---
+
 # 更新日志
 
 ## v2.0.0 — 支持任意来源的聊天记录
@@ -18,3 +29,4 @@
 - 按会话 / 发送人 / 日期范围 / 消息类型筛选，命中上下文面板
 - 本地 HTTP 服务只绑 `127.0.0.1`，零第三方依赖
 - macOS / Windows 双击启动脚本
+*（内容由AI生成，仅供参考）*

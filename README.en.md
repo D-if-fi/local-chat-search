@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d817d85cd75e11f1a286525400638852
+    ReservedCode1: TCP6ks7n6D5ILDEbK6Qcvs4wuBMIMm2FaiRNF3Ek3kX9RoOSHcLW8oZvSwsQlrpFcovG+pZGJjF2ro2EUnsV8Iucm89Api7qWCuNQuCyeCTEQSFu4zuduD4AMiUap5OVqqVdmvEKvgg30ZgFGJKMo7nAJ/RIIASLLEj4iMGfXnhvlqvTmQs9bddEu0o=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d817d85cd75e11f1a286525400638852
+    ReservedCode2: TCP6ks7n6D5ILDEbK6Qcvs4wuBMIMm2FaiRNF3Ek3kX9RoOSHcLW8oZvSwsQlrpFcovG+pZGJjF2ro2EUnsV8Iucm89Api7qWCuNQuCyeCTEQSFu4zuduD4AMiUap5OVqqVdmvEKvgg30ZgFGJKMo7nAJ/RIIASLLEj4iMGfXnhvlqvTmQs9bddEu0o=
+---
+
 # local-chat-search
 
 Turn your exported chat history into an **offline, full-text searchable** local database. No data ever leaves your machine.
@@ -86,3 +97,4 @@ To add a new export format, implement a parser class in `app/importer.py` (`labe
 ## License
 
 [MIT](LICENSE)
+*（内容由AI生成，仅供参考）*

@@ -1,3 +1,14 @@
+---
+AIGC:
+    Label: "1"
+    ContentProducer: 001191440300708461136T1XGW3
+    ProduceID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d76e568fd75e11f1a286525400638852
+    ReservedCode1: WRC2kqf//fEmA25dmiysefu1Rht85KDiSJZYVXjunqglU6yFpc8kSbbESH75uiy8KluWvzyioyxnEvfoDETNL0J15S8e0GgzrFHhgZyQMVocFA+1FH2KC2fFhwtuNtcle3+8NzovdpRgdmnqm3gjOtXMxZ30O5Bbd4Zvjf3xN0stVj/F6u6Z9vO5t1I=
+    ContentPropagator: 001191440300708461136T1XGW3
+    PropagateID: dc1f9365f5c0b69ca1bfc4be0972c4a3_d76e568fd75e11f1a286525400638852
+    ReservedCode2: WRC2kqf//fEmA25dmiysefu1Rht85KDiSJZYVXjunqglU6yFpc8kSbbESH75uiy8KluWvzyioyxnEvfoDETNL0J15S8e0GgzrFHhgZyQMVocFA+1FH2KC2fFhwtuNtcle3+8NzovdpRgdmnqm3gjOtXMxZ30O5Bbd4Zvjf3xN0stVj/F6u6Z9vO5t1I=
+---
+
 # local-chat-search
 
 把自己导出的聊天记录变成**离线、可全文检索、数据不出本机**的本地资料库。
@@ -111,3 +122,4 @@ python3 tests/smoke_test.py     # 起服务→导入 examples→检索→清理�
 ## License
 
 [MIT](LICENSE)
+*（内容由AI生成，仅供参考）*
